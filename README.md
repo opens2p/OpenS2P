@@ -1,16 +1,67 @@
-## Hi there 👋
+# OpenS2P
 
-<!--
-**opens2p/OpenS2P** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+OpenS2P is an AI-powered, open-source Source-to-Pay (S2P) platform designed for organizations that want enterprise procurement capabilities without enterprise licensing costs.
 
-Here are some ideas to get you started:
+## Vision
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+Build the world's best open-source procurement platform that is simple, modern, AI-native, and easy to deploy.
+
+## Features
+
+- Supplier Lifecycle Management (SLP)
+- Supplier Registration
+- Supplier Qualification
+- Supplier Performance
+- Strategic Sourcing
+- RFI / RFQ / RFP
+- Auctions
+- Contract Lifecycle Management
+- Purchase Requisitions
+- Purchase Orders
+- Goods Receipt
+- Invoice Management
+- Approval Workflows
+- Budget Controls
+- Spend Analytics
+- AI Procurement Assistant
+- REST APIs
+- Multi-company
+- Multi-language
+- Role-based Security
+
+## Technology Stack
+
+- Python
+- FastAPI
+- NiceGUI
+- MariaDB
+- SQLAlchemy
+- Docker
+- Docker Compose
+- JWT Authentication
+
+## Project Status
+
+🚧 Under Active Development
+
+## Roadmap
+
+- [ ] Core Platform
+- [ ] Supplier Management
+- [ ] Sourcing
+- [ ] Contracts
+- [ ] Procurement
+- [ ] Invoicing
+- [ ] Analytics
+- [ ] AI Copilot
+- [ ] Mobile Support
+
+## Contributing
+
+Contributions are welcome.
+
+Please open an Issue before submitting major changes.
+
+## License
+
+Apache License 2.0
