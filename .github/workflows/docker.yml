@@ -16,11 +16,15 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Lowercase repository name
+        id: repo
+        run: |
+          echo "name=${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
       - uses: docker/build-push-action@v6
         with:
           context: backend
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
+          tags: ghcr.io/${{ steps.repo.outputs.name }}/backend:${{ github.sha }}
 
   frontend:
     runs-on: ubuntu-latest
@@ -32,8 +36,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Lowercase repository name
+        id: repo
+        run: |
+          echo "name=${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
       - uses: docker/build-push-action@v6
         with:
           context: frontend
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}
+          tags: ghcr.io/${{ steps.repo.outputs.name }}/frontend:${{ github.sha }}
