@@ -1,0 +1,23 @@
+name: Security Scan
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"  # every Monday
+  push:
+    branches: [main]
+
+jobs:
+  deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: pip install pip-audit
+      - run: pip-audit -r backend/requirements.txt
+      - run: npm audit --audit-level=high
+        working-directory: frontend

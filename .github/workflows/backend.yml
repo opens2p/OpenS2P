@@ -1,0 +1,64 @@
+# OpenS2P Backend – CI
+# =====================
+
+name: Backend CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths: ["backend/**", "tests/**"]
+  pull_request:
+    branches: [main]
+    paths: ["backend/**", "tests/**"]
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: pip install ruff
+      - run: ruff check backend/ tests/
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: pip install mypy sqlalchemy fastapi pydantic pydantic-settings
+      - run: mypy backend/app/ --ignore-missing-imports
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: opens2p
+          POSTGRES_PASSWORD: opens2p
+          POSTGRES_DB: opens2p_test
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 3s
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: pip install -r backend/requirements.txt httpx pytest pytest-asyncio
+      - run: alembic upgrade head
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://opens2p:opens2p@localhost:5432/opens2p_test
+      - run: pytest ../tests/ -v
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://opens2p:opens2p@localhost:5432/opens2p_test

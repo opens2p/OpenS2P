@@ -1,0 +1,55 @@
+# OpenS2P – Docker Compose
+# ==========================
+# Start the full stack:
+#
+#   docker compose up --build
+#
+# Services:
+#   postgres   – PostgreSQL 16 database
+#   backend    – FastAPI / uvicorn
+#   frontend   – Nginx + React build
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: opens2p
+      POSTGRES_PASSWORD: opens2p
+      POSTGRES_DB: opens2p_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opens2p"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://opens2p:opens2p@postgres:5432/opens2p_dev"
+      JWT_SECRET_KEY: "${JWT_SECRET_KEY:-change-me-in-production}"
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  pgdata:

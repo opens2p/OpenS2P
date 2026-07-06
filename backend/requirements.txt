@@ -1,0 +1,25 @@
+# OpenS2P – Python Dependencies
+# ==============================
+
+# Web framework
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.0
+pydantic-settings>=2.0
+
+# Database
+sqlalchemy[asyncio]>=2.0
+asyncpg>=0.29
+psycopg2-binary>=2.9
+alembic>=1.13
+
+# Security
+python-jose[cryptography]>=3.3
+bcrypt>=4.0
+
+# CORS
+# (included with fastapi)
+
+# (optional) AI / ML
+# openai>=1.0
+# langchain>=0.1
