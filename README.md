@@ -11,7 +11,7 @@
   <p>
     <img src="https://img.shields.io/badge/python-3.12-blue" alt="Python 3.12">
     <img src="https://img.shields.io/badge/react-19-purple" alt="React 19">
-    <img src="https://img.shields.io/badge/license-MIT-green" alt="License MIT">
+    <img src="https://img.shields.io/badge/license-Apache%202.0-green" alt="License Apache 2.0">
   </p>
 </div>
 
@@ -216,9 +216,23 @@ OpenS2P/
 - [ ] Budget management
 - [ ] Analytics dashboard
 
+## Contributing
+
+We welcome contributors — engineers, architects, security researchers, technical writers, and procurement domain experts. See [CONTRIBUTING.md](./CONTRIBUTING.md) to get started, and look for issues labeled [`good first issue`](https://github.com/opens2p/OpenS2P/labels/good%20first%20issue). Please also read our [Code of Conduct](./CODE_OF_CONDUCT.md).
+
+## Sponsor
+
+OpenS2P is free and open source. Sponsorship funds infrastructure, security audits, and the AI evaluation program: [github.com/sponsors/opens2p](https://github.com/sponsors/opens2p)
+
 ## License
 
-MIT
+Apache 2.0 — see [LICENSE](./LICENSE). Procura AI and ContractEdge are commercial applications built on the OpenS2P platform; the platform itself is fully open source.
+
+## Contact
+
+- Website: [opens2p.org](https://opens2p.org)
+- Email: opens2p@gmail.com
+- LinkedIn: [linkedin.com/company/opens2p](https://www.linkedin.com/company/opens2p)
 
 ---
 

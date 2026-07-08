@@ -22,7 +22,7 @@ Examples of unacceptable behavior:
 ## Enforcement
 
 Project maintainers are responsible for clarifying and enforcing standards.
-Instances of abusive behavior may be reported by contacting the project team.
+Instances of abusive behavior may be reported by emailing **opens2p@gmail.com**. All reports will be reviewed promptly and handled with discretion for the reporter's privacy.
 
 ## Attribution
 

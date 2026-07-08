@@ -44,10 +44,14 @@ make test
 
 ### 6. Submit a Pull Request
 
-- Target the `develop` branch
+- Target the `main` branch
 - Include a clear description of changes
 - Reference the related issue
 - Keep PRs focused on a single concern
+
+## Security issues
+
+Please **do not** open a public issue for a security vulnerability. Email **opens2p@gmail.com** with details and we'll respond privately.
 
 ## Development Conventions
 
