@@ -72,6 +72,7 @@ export interface PurchaseRequisition {
   id: string;
   pr_number?: string | null;
   status: PRStatus;
+  supplier_id?: string | null;
   description?: string | null;
   items?: PRItem[];
   created_at?: string | null;
@@ -85,13 +86,14 @@ export interface PRItem {
 }
 
 export interface PRCreatePayload {
+  supplier_id?: string;
   description?: string;
   items: { description?: string; quantity?: number; unit_price?: number }[];
 }
 
 // ── Purchase Order ───────────────────────────────────────────────────────
 
-export type POStatus = 'CREATED' | 'SENT' | 'CONFIRMED' | 'CLOSED' | 'CANCELLED';
+export type POStatus = 'CREATED' | 'APPROVED' | 'SENT' | 'ACKNOWLEDGED' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CLOSED' | 'CANCELLED';
 
 export interface PurchaseOrder {
   id: string;
@@ -131,6 +133,7 @@ export interface Contract {
   start_date?: string | null;
   end_date?: string | null;
   description?: string | null;
+  status?: string | null;
   created_at?: string | null;
 }
 
@@ -151,5 +154,99 @@ export interface Workflow {
   object_id: string;
   status: string;
   tasks?: ApprovalTask[];
+  created_at?: string | null;
+}
+
+// ── Dashboard / Analytics ────────────────────────────────────────────────
+
+export interface DashboardData {
+  kpi_summary: Record<string, unknown>;
+  spend: Record<string, unknown>;
+  suppliers: Record<string, unknown>;
+  cycle_times: Record<string, unknown>;
+  contracts: Record<string, unknown>;
+}
+
+export interface SpendCategory {
+  category: string;
+  total: number;
+  percentage?: number;
+}
+
+export interface SpendTrend {
+  month: string;
+  total: number;
+}
+
+export interface SupplierScorecard {
+  supplier_id: string;
+  supplier_name: string;
+  total_spend: number;
+  invoice_count: number;
+  on_time_rate?: number;
+  quality_score?: number;
+  risk_score?: number;
+}
+
+// ── Integrations ─────────────────────────────────────────────────────────
+
+export interface ConnectionResponse {
+  id: string;
+  connection_name: string;
+  connector_type: string;
+  endpoint_url?: string | null;
+  auth_type?: string | null;
+  is_connected: boolean;
+  last_test_at?: string | null;
+  last_sync_at?: string | null;
+  tenant_id: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface SyncResponse {
+  run_id: string;
+  status: string;
+  records_processed: number;
+  records_created: number;
+  records_updated: number;
+  records_failed: number;
+  errors?: Array<Record<string, unknown>> | null;
+}
+
+export interface RunResponse {
+  id: string;
+  connection_id: string;
+  direction: string;
+  status: string;
+  started_at?: string | null;
+  completed_at?: string | null;
+  records_processed?: number | null;
+  errors?: Record<string, unknown> | null;
+  created_at?: string | null;
+}
+
+// ── Receiving ────────────────────────────────────────────────────────────
+
+export interface Receipt {
+  id: string;
+  po_id: string;
+  status: string;
+  created_at?: string | null;
+}
+
+export interface SupplierContract {
+  id: string;
+  contract_number?: string | null;
+  contract_value?: number | null;
+  start_date?: string | null;
+  end_date?: string | null;
+}
+
+export interface SupplierPurchaseOrder {
+  id: string;
+  po_number?: string | null;
+  status: string;
+  total_amount: number;
   created_at?: string | null;
 }

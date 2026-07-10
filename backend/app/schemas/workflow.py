@@ -30,6 +30,14 @@ class EscalationRequest(BaseModel):
     reason: str | None = None
 
 
+class ApproveRequest(BaseModel):
+    payload: dict[str, Any] | None = None
+
+
+class RejectRequest(BaseModel):
+    reason: str | None = None
+
+
 class ApprovalTaskResponse(AuditFields):
     model_config = ConfigDict(from_attributes=True)
 
@@ -40,6 +48,9 @@ class ApprovalTaskResponse(AuditFields):
     payload: dict[str, Any] | None = None
     completed_at: datetime | None = None
     tenant_id: uuid.UUID
+    step_name: str | None = None
+    assigned_role: str | None = None
+    comments: str | None = None
 
 
 class WorkflowResponse(AuditFields):
@@ -51,4 +62,19 @@ class WorkflowResponse(AuditFields):
     status: WorkflowStatus
     started_at: datetime | None = None
     tenant_id: uuid.UUID
+    workflow_name: str | None = None
+    current_step: int | None = None
+    wf_metadata: dict[str, Any] | None = None
     tasks: list[ApprovalTaskResponse] | None = None
+
+
+class WorkflowHistoryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    object_type: str
+    object_id: uuid.UUID
+    status: WorkflowStatus
+    started_at: datetime | None = None
+    created_at: datetime | None = None
+    tenant_id: uuid.UUID

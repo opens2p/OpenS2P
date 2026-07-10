@@ -47,12 +47,19 @@ class PurchaseRequisitionRepository(BaseRepository[PurchaseRequisition]):
         """PRs submitted and awaiting approval."""
         return await self.list_by_status(PRStatus.SUBMITTED)
 
-    async def get_with_items(self, pr_id: uuid.UUID) -> PurchaseRequisition | None:
+    async def get_with_items(
+        self,
+        pr_id: uuid.UUID,
+        *,
+        include_inactive: bool = False,
+    ) -> PurchaseRequisition | None:
         stmt = (
             self._stmt()
             .where(PurchaseRequisition.id == pr_id)
             .options(joinedload(PurchaseRequisition.items))
         )
+        if not include_inactive:
+            stmt = stmt.where(PurchaseRequisition.is_active.is_(True))
         result = await self.session.execute(stmt)
         return result.unique().scalar_one_or_none()
 

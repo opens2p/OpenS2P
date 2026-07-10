@@ -28,6 +28,9 @@ class PurchaseRequisition(Base, AuditMixin):
     requester_id: Mapped[uuid.UUID | None] = mapped_column(
         PG_UUID(as_uuid=True), ForeignKey("users.id"), nullable=True,
     )
+    supplier_id: Mapped[uuid.UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("suppliers.id"), nullable=True, index=True,
+    )
     description: Mapped[str | None] = mapped_column(Text)
 
     # -- relationships -------------------------------------------------------

@@ -16,6 +16,7 @@ class Receipt(Base, AuditMixin):
 
     __tablename__ = "receipts"
 
+    receipt_number: Mapped[str | None] = mapped_column(String(100), unique=True)
     po_id: Mapped[uuid.UUID] = mapped_column(
         PG_UUID(as_uuid=True), ForeignKey("purchase_orders.id"), nullable=False, index=True,
     )

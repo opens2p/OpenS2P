@@ -19,6 +19,18 @@ class InvoiceAIService:
     def __init__(self, uow: UnitOfWork) -> None:
         self.uow = uow
 
+    async def detect_anomalies(self, invoice_id: uuid.UUID) -> dict[str, Any]:
+        invoice = await self.uow.invoices.get(invoice_id)
+        if not invoice:
+            return {"error": "Invoice not found"}
+        po = await self.uow.purchase_orders.get(invoice.po_id) if invoice.po_id else None
+        anomalies = []
+        if po and invoice.amount and po.items:
+            po_total = sum((item.price or 0) * (item.quantity or 0) for item in po.items)
+            if invoice.amount > po_total * 1.1:
+                anomalies.append(f"Invoice amount ${float(invoice.amount):.2f} exceeds PO total ${float(po_total):.2f} by >10%")
+        return {"invoice_id": str(invoice_id), "anomalies": anomalies, "risk": "HIGH" if anomalies else "LOW"}
+
     async def analyze(self, invoice_id: uuid.UUID) -> dict[str, Any]:
         """Analyse an invoice for anomalies, duplicates, and fraud signals."""
         invoice = await self.uow.invoices.get(invoice_id)

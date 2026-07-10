@@ -478,10 +478,27 @@ def _seed_workflow_templates(session: Session) -> None:
 # ═══════════════════════════════════════════════════════════════════════════
 
 _DEMO_SUPPLIER_ID = _uuid("supplier:acme")
+_DEMO_SUPPLIER2_ID = _uuid("supplier:globaltech")
+_DEMO_SUPPLIER3_ID = _uuid("supplier:officeworks")
+_DEMO_SUPPLIER4_ID = _uuid("supplier:horizon")
+_DEMO_SUPPLIER5_ID = _uuid("supplier:precision")
+_DEMO_SUPPLIER6_ID = _uuid("supplier:shield")
+_DEMO_SUPPLIER7_ID = _uuid("supplier:transglobal")
+_DEMO_SUPPLIER8_ID = _uuid("supplier:creative")
+_DEMO_SUPPLIER9_ID = _uuid("supplier:cloudsaas")
+_DEMO_SUPPLIER10_ID = _uuid("supplier:pinnacle")
 _DEMO_CONTRACT_ID = _uuid("contract:acme-2026")
 _DEMO_PR_ID = _uuid("pr:2026-001")
 _DEMO_PO_ID = _uuid("po:2026-001")
+_DEMO_PO2_ID = _uuid("po:2026-002")
+_DEMO_PO3_ID = _uuid("po:2026-003")
+_DEMO_PO4_ID = _uuid("po:2026-004")
+_DEMO_PO5_ID = _uuid("po:2026-005")
 _DEMO_INVOICE_ID = _uuid("invoice:inv-2026-001")
+_DEMO_INVOICE2_ID = _uuid("invoice:inv-2026-002")
+_DEMO_INVOICE3_ID = _uuid("invoice:inv-2026-003")
+_DEMO_INVOICE4_ID = _uuid("invoice:inv-2026-004")
+_DEMO_INVOICE5_ID = _uuid("invoice:inv-2026-005")
 
 
 def _seed_demo_data(session: Session) -> None:
@@ -489,32 +506,182 @@ def _seed_demo_data(session: Session) -> None:
     approver_id = _uuid("user:approver")
     finance_id = _uuid("user:finance")
 
-    # ── Supplier ─────────────────────────────────────────────────────────
-    _upsert(
-        session,
-        "suppliers",
+    # ── Suppliers ────────────────────────────────────────────────────────
+    suppliers_data = [
         dict(
             id=_DEMO_SUPPLIER_ID,
-            tenant_id=SEED_TENANT_ID,
             supplier_number="SUP-00001",
-            supplier_name="Acme Industrial Supplies Co.",
+            supplier_name="Microsoft Corporation",
             status="APPROVED",
-            risk_score=15.00,
-            description="Leading supplier of industrial components and MRO supplies",
-            address="100 Innovation Drive, Chicago, IL 60601, United States",
+            risk_score=5.00,
+            description="Enterprise software, cloud services, and hardware solutions",
+            address="1 Microsoft Way, Redmond, WA 98052, United States",
             extras=json.dumps({
                 "payment_terms": "NET30",
                 "delivery_lead_days": 10,
-                "certifications": ["ISO_9001", "ISO_14001"],
+                "certifications": ["ISO_9001", "ISO_27001", "SOC2"],
+                "category": "Software",
             }),
-            created_at=_now(),
-            updated_at=_now(),
-            created_by=buyer_id,
-            updated_by=buyer_id,
-            is_active=True,
         ),
-        conflict_col="supplier_number",
-    )
+        dict(
+            id=_DEMO_SUPPLIER2_ID,
+            supplier_number="SUP-00002",
+            supplier_name="Dell Technologies",
+            status="APPROVED",
+            risk_score=8.00,
+            description="Enterprise IT hardware, servers, workstations, and data center infrastructure",
+            address="1 Dell Way, Round Rock, TX 78682, United States",
+            extras=json.dumps({
+                "payment_terms": "NET45",
+                "delivery_lead_days": 5,
+                "certifications": ["ISO_9001", "ISO_27001", "SOC2"],
+                "category": "IT Hardware",
+            }),
+        ),
+        dict(
+            id=_DEMO_SUPPLIER3_ID,
+            supplier_number="SUP-00003",
+            supplier_name="Amazon Web Services",
+            status="APPROVED",
+            risk_score=4.00,
+            description="Cloud infrastructure, computing, storage, and enterprise cloud services",
+            address="410 Terry Avenue North, Seattle, WA 98109, United States",
+            extras=json.dumps({
+                "payment_terms": "NET30",
+                "delivery_lead_days": 0,
+                "certifications": ["ISO_9001", "ISO_27001", "SOC2", "HIPAA"],
+                "category": "Software",
+            }),
+        ),
+        dict(
+            id=_DEMO_SUPPLIER4_ID,
+            supplier_number="SUP-00004",
+            supplier_name="Accenture PLC",
+            status="APPROVED",
+            risk_score=10.00,
+            description="Management consulting, technology services, and digital transformation",
+            address="161 N Clark Street, Chicago, IL 60601, United States",
+            extras=json.dumps({
+                "payment_terms": "NET60",
+                "delivery_lead_days": 0,
+                "certifications": ["ISO_9001", "ISO_27001"],
+                "category": "Professional Services",
+            }),
+        ),
+        dict(
+            id=_DEMO_SUPPLIER5_ID,
+            supplier_number="SUP-00005",
+            supplier_name="Infosys Limited",
+            status="APPROVED",
+            risk_score=12.00,
+            description="IT consulting, outsourcing, and digital services",
+            address="44 Electronics City, Hosur Road, Bangalore 560100, India",
+            extras=json.dumps({
+                "payment_terms": "NET45",
+                "delivery_lead_days": 0,
+                "certifications": ["ISO_9001", "ISO_27001", "CMMI_5"],
+                "category": "Professional Services",
+            }),
+        ),
+        dict(
+            id=_DEMO_SUPPLIER6_ID,
+            supplier_number="SUP-00006",
+            supplier_name="Siemens AG",
+            status="APPROVED",
+            risk_score=6.00,
+            description="Industrial automation, manufacturing equipment, and facility solutions",
+            address="Werner-von-Siemens-Strasse 1, Munich 80333, Germany",
+            extras=json.dumps({
+                "payment_terms": "NET30",
+                "delivery_lead_days": 15,
+                "certifications": ["ISO_9001", "ISO_14001", "ISO_45001"],
+                "category": "Facilities",
+            }),
+        ),
+        dict(
+            id=_DEMO_SUPPLIER7_ID,
+            supplier_number="SUP-00007",
+            supplier_name="DHL Supply Chain",
+            status="APPROVED",
+            risk_score=7.00,
+            description="International logistics, warehousing, and supply chain management",
+            address="Deutsche Post Platz 1, Bonn 53113, Germany",
+            extras=json.dumps({
+                "payment_terms": "NET45",
+                "delivery_lead_days": 0,
+                "certifications": ["ISO_9001", "ISO_14001", "AEO", "GDP"],
+                "category": "Logistics",
+            }),
+        ),
+        dict(
+            id=_DEMO_SUPPLIER8_ID,
+            supplier_number="SUP-00008",
+            supplier_name="WPP Group",
+            status="APPROVED",
+            risk_score=9.00,
+            description="Global advertising, marketing, and communications services",
+            address="Sea Containers, 18 Upper Ground, London SE1 9GL, United Kingdom",
+            extras=json.dumps({
+                "payment_terms": "NET30",
+                "delivery_lead_days": 5,
+                "certifications": ["ISO_9001", "ISO_14001"],
+                "category": "Marketing",
+            }),
+        ),
+        dict(
+            id=_DEMO_SUPPLIER9_ID,
+            supplier_number="SUP-00009",
+            supplier_name="Salesforce Inc.",
+            status="DRAFT",
+            risk_score=5.00,
+            description="CRM platform, enterprise cloud applications, and AI solutions",
+            address="415 Mission Street, San Francisco, CA 94105, United States",
+            extras=json.dumps({
+                "payment_terms": "NET30",
+                "delivery_lead_days": 0,
+                "certifications": ["ISO_27001", "SOC2", "HIPAA"],
+                "category": "Software",
+            }),
+        ),
+        dict(
+            id=_DEMO_SUPPLIER10_ID,
+            supplier_number="SUP-00010",
+            supplier_name="McKinsey & Company",
+            status="REGISTERED",
+            risk_score=15.00,
+            description="Strategic management consulting and advisory services",
+            address="55 East 52nd Street, New York, NY 10055, United States",
+            extras=json.dumps({
+                "payment_terms": "NET60",
+                "delivery_lead_days": 0,
+                "certifications": ["ISO_9001"],
+                "category": "Professional Services",
+            }),
+        ),
+    ]
+
+    for sup in suppliers_data:
+        _upsert(
+            session,
+            "suppliers",
+            dict(
+                id=sup["id"],
+                tenant_id=SEED_TENANT_ID,
+                supplier_number=sup["supplier_number"],
+                supplier_name=sup["supplier_name"],
+                status=sup["status"],
+                risk_score=sup["risk_score"],
+                description=sup["description"],
+                address=sup["address"],
+                extras=sup["extras"],
+                created_at=_now(),
+                updated_at=_now(),
+                created_by=buyer_id,
+                updated_by=buyer_id,
+                is_active=True,
+            ),
+            conflict_col="supplier_number",
+        )
 
     # ── Contract ─────────────────────────────────────────────────────────
     _upsert(
@@ -538,62 +705,86 @@ def _seed_demo_data(session: Session) -> None:
         conflict_col="id",
     )
 
-    # ── Purchase Requisition ─────────────────────────────────────────────
-    _upsert(
-        session,
-        "purchase_requisitions",
+    # ── Purchase Requisitions ────────────────────────────────────────────
+    pr_defs = [
         dict(
             id=_DEMO_PR_ID,
-            tenant_id=SEED_TENANT_ID,
-            pr_number="PR-2026-00001",
+            pr_number="PR-260710-00001",
             status="APPROVED",
             requester_id=_uuid("user:requester"),
+            supplier_id=_DEMO_SUPPLIER_ID,
             description="Q2 MRO supply order — safety equipment and tools",
-            created_at=_now(),
-            updated_at=_now(),
-            created_by=_uuid("user:requester"),
-            updated_by=approver_id,
-            is_active=True,
-        ),
-        conflict_col="pr_number",
-    )
-
-    # PR items
-    pr_items = [
-        dict(
-            id=_uuid("pr_item:safety-helmets"),
-            requisition_id=_DEMO_PR_ID,
-            description="Safety helmets (ANSI Z89.1 certified)",
-            quantity=50,
-            unit_price=34.50,
+            items=[
+                dict(id=_uuid("pr_item:safety-helmets"), description="Safety helmets (ANSI Z89.1 certified)", quantity=50, unit_price=34.50),
+                dict(id=_uuid("pr_item:safety-goggles"), description="Industrial safety goggles, anti-fog", quantity=100, unit_price=12.75),
+            ],
         ),
         dict(
-            id=_uuid("pr_item:safety-goggles"),
-            requisition_id=_DEMO_PR_ID,
-            description="Industrial safety goggles, anti-fog",
-            quantity=100,
-            unit_price=12.75,
+            id=_uuid("pr:2026-002"),
+            pr_number="PR-260710-00002",
+            status="SUBMITTED",
+            requester_id=_uuid("user:requester"),
+            supplier_id=_DEMO_SUPPLIER2_ID,
+            description="Server infrastructure upgrade — Q3 data center refresh",
+            items=[
+                dict(id=_uuid("pr_item:servers"), description="Dell PowerEdge R760xs servers", quantity=4, unit_price=12500.00),
+                dict(id=_uuid("pr_item:ssd"), description="Enterprise SSD 3.84TB", quantity=16, unit_price=850.00),
+            ],
+        ),
+        dict(
+            id=_uuid("pr:2026-003"),
+            pr_number="PR-260710-00003",
+            status="DRAFT",
+            requester_id=_uuid("user:requester"),
+            supplier_id=None,
+            description="Office furniture and ergonomic equipment for new hires",
+            items=[
+                dict(id=_uuid("pr_item:desks"), description="Standing desks 60x30", quantity=10, unit_price=899.00),
+                dict(id=_uuid("pr_item:chairs"), description="Ergonomic office chairs", quantity=10, unit_price=450.00),
+            ],
         ),
     ]
-    for item in pr_items:
+
+    for prd in pr_defs:
         _upsert(
             session,
-            "purchase_requisition_items",
+            "purchase_requisitions",
             dict(
-                id=item["id"],
+                id=prd["id"],
                 tenant_id=SEED_TENANT_ID,
-                requisition_id=item["requisition_id"],
-                description=item["description"],
-                quantity=item["quantity"],
-                unit_price=item["unit_price"],
+                pr_number=prd["pr_number"],
+                status=prd["status"],
+                requester_id=prd["requester_id"],
+                supplier_id=prd["supplier_id"],
+                description=prd["description"],
                 created_at=_now(),
                 updated_at=_now(),
-                created_by=_uuid("user:requester"),
-                updated_by=_uuid("user:requester"),
+                created_by=prd["requester_id"],
+                updated_by=approver_id,
                 is_active=True,
             ),
-            conflict_col="id",
+            conflict_col="pr_number",
         )
+
+        for item in prd["items"]:
+            _upsert(
+                session,
+                "purchase_requisition_items",
+                dict(
+                    id=item["id"],
+                    tenant_id=SEED_TENANT_ID,
+                    requisition_id=prd["id"],
+                    description=item["description"],
+                    quantity=item["quantity"],
+                    unit_price=item["unit_price"],
+                    created_at=_now(),
+                    updated_at=_now(),
+                    created_by=prd["requester_id"],
+                    updated_by=prd["requester_id"],
+                    is_active=True,
+                ),
+                conflict_col="id",
+            )
 
     # ── Purchase Order ───────────────────────────────────────────────────
     _upsert(
@@ -602,9 +793,9 @@ def _seed_demo_data(session: Session) -> None:
         dict(
             id=_DEMO_PO_ID,
             tenant_id=SEED_TENANT_ID,
-            po_number="PO-2026-00001",
+            po_number="PO-260710-01001",
             supplier_id=_DEMO_SUPPLIER_ID,
-            status="CONFIRMED",
+            status="RECEIVED",
             created_at=_now(),
             updated_at=_now(),
             created_by=buyer_id,
@@ -651,33 +842,208 @@ def _seed_demo_data(session: Session) -> None:
             conflict_col="id",
         )
 
-    # ── Invoice ──────────────────────────────────────────────────────────
+    # ── Receipt ──────────────────────────────────────────────────────────
     _upsert(
         session,
-        "invoices",
+        "receipts",
+        dict(
+            id=_uuid("receipt:po-2026-001"),
+            tenant_id=SEED_TENANT_ID,
+            receipt_number="GR-260710-00001",
+            po_id=_DEMO_PO_ID,
+            status="completed",
+            received_date=date(2026, 3, 20),
+            created_at=_now(),
+            updated_at=_now(),
+            created_by=buyer_id,
+            updated_by=buyer_id,
+            is_active=True,
+        ),
+        conflict_col="receipt_number",
+    )
+
+    # ── Additional POs ───────────────────────────────────────────────────
+    po_defs = [
+        dict(
+            id=_DEMO_PO2_ID,
+            po_number="PO-260710-01002",
+            supplier_id=_DEMO_SUPPLIER2_ID,
+            status="ACKNOWLEDGED",
+        ),
+        dict(
+            id=_DEMO_PO3_ID,
+            po_number="PO-260710-01003",
+            supplier_id=_DEMO_SUPPLIER4_ID,
+            status="SENT",
+        ),
+        dict(
+            id=_DEMO_PO4_ID,
+            po_number="PO-260710-01004",
+            supplier_id=_DEMO_SUPPLIER6_ID,
+            status="PARTIALLY_RECEIVED",
+        ),
+        dict(
+            id=_DEMO_PO5_ID,
+            po_number="PO-260710-01005",
+            supplier_id=_DEMO_SUPPLIER9_ID,
+            status="APPROVED",
+        ),
+    ]
+
+    for pod in po_defs:
+        _upsert(
+            session,
+            "purchase_orders",
+            dict(
+                id=pod["id"],
+                tenant_id=SEED_TENANT_ID,
+                po_number=pod["po_number"],
+                supplier_id=pod["supplier_id"],
+                status=pod["status"],
+                created_at=_now(),
+                updated_at=_now(),
+                created_by=buyer_id,
+                updated_by=buyer_id,
+                is_active=True,
+            ),
+            conflict_col="po_number",
+        )
+
+    # PO items for additional POs
+    _upsert(
+        session,
+        "purchase_order_items",
+        dict(
+            id=_uuid("po_item:servers"),
+            tenant_id=SEED_TENANT_ID,
+            po_id=_DEMO_PO2_ID,
+            description="Dell PowerEdge R760xs servers",
+            quantity=10,
+            price=12500.00,
+        ),
+        conflict_col="id",
+    )
+    _upsert(
+        session,
+        "purchase_order_items",
+        dict(
+            id=_uuid("po_item:consulting"),
+            tenant_id=SEED_TENANT_ID,
+            po_id=_DEMO_PO3_ID,
+            description="Digital transformation consulting engagement",
+            quantity=1,
+            price=82000.00,
+        ),
+        conflict_col="id",
+    )
+    _upsert(
+        session,
+        "purchase_order_items",
+        dict(
+            id=_uuid("po_item:security"),
+            tenant_id=SEED_TENANT_ID,
+            po_id=_DEMO_PO4_ID,
+            description="Facility security equipment and installation",
+            quantity=1,
+            price=30000.00,
+        ),
+        conflict_col="id",
+    )
+    _upsert(
+        session,
+        "purchase_order_items",
+        dict(
+            id=_uuid("po_item:saas"),
+            tenant_id=SEED_TENANT_ID,
+            po_id=_DEMO_PO5_ID,
+            description="Enterprise SaaS subscription — annual license",
+            quantity=1,
+            price=55000.00,
+        ),
+        conflict_col="id",
+    )
+
+    # ── Additional Invoices ──────────────────────────────────────────────
+    invoice_defs = [
         dict(
             id=_DEMO_INVOICE_ID,
-            tenant_id=SEED_TENANT_ID,
-            invoice_number="INV-2026-00001",
+            invoice_number="INV-260315-00001",
             po_id=_DEMO_PO_ID,
             amount=2975.00,
             match_status="MATCHED",
-            invoice_date=date(2026, 3, 15),
-            due_date=date(2026, 4, 14),
-            extras=json.dumps({
-                "supplier_reference": "ACM-INV-2026-0315",
-                "payment_terms": "NET30",
-            }),
-            created_at=_now(),
-            updated_at=_now(),
-            created_by=finance_id,
-            updated_by=finance_id,
-            is_active=True,
+            invoice_date=date(2026, 1, 15),
+            due_date=date(2026, 2, 14),
+            supplier_ref="ACM-INV-2026-001",
         ),
-        conflict_col="invoice_number",
-    )
+        dict(
+            id=_DEMO_INVOICE2_ID,
+            invoice_number="INV-260228-00002",
+            po_id=_DEMO_PO2_ID,
+            amount=125000.00,
+            match_status="MATCHED",
+            invoice_date=date(2026, 2, 28),
+            due_date=date(2026, 3, 30),
+            supplier_ref="GT-INV-2026-002",
+        ),
+        dict(
+            id=_DEMO_INVOICE3_ID,
+            invoice_number="INV-260331-00003",
+            po_id=_DEMO_PO3_ID,
+            amount=82000.00,
+            match_status="MATCHED",
+            invoice_date=date(2026, 3, 31),
+            due_date=date(2026, 5, 30),
+            supplier_ref="HC-INV-2026-003",
+        ),
+        dict(
+            id=_DEMO_INVOICE4_ID,
+            invoice_number="INV-260430-00004",
+            po_id=_DEMO_PO4_ID,
+            amount=30000.00,
+            match_status="PENDING",
+            invoice_date=date(2026, 4, 30),
+            due_date=date(2026, 5, 30),
+            supplier_ref="SS-INV-2026-004",
+        ),
+        dict(
+            id=_DEMO_INVOICE5_ID,
+            invoice_number="INV-260531-00005",
+            po_id=_DEMO_PO5_ID,
+            amount=55000.00,
+            match_status="PENDING",
+            invoice_date=date(2026, 5, 31),
+            due_date=date(2026, 6, 30),
+            supplier_ref="CST-INV-2026-005",
+        ),
+    ]
 
-    print("  ✓ Demo supplier, contract, PR, PO, invoice seeded")
+    for invd in invoice_defs:
+        _upsert(
+            session,
+            "invoices",
+            dict(
+                id=invd["id"],
+                tenant_id=SEED_TENANT_ID,
+                invoice_number=invd["invoice_number"],
+                po_id=invd["po_id"],
+                amount=invd["amount"],
+                match_status=invd["match_status"],
+                invoice_date=invd["invoice_date"],
+                due_date=invd["due_date"],
+                extras=json.dumps({
+                    "supplier_reference": invd["supplier_ref"],
+                    "payment_terms": "NET30",
+                }),
+                created_at=_now(),
+                updated_at=_now(),
+                created_by=finance_id,
+                updated_by=finance_id,
+                is_active=True,
+            ),
+            conflict_col="invoice_number",
+        )
+
+    print(f"  ✓ {len(suppliers_data)} suppliers, 1 contract, {len(pr_defs)} PRs, {len(po_defs) + 1} POs, 1 receipt, {len(invoice_defs)} invoices seeded")
 
 
 # ═══════════════════════════════════════════════════════════════════════════

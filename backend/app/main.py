@@ -21,13 +21,19 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import router as v1_router
+from app.core.config import settings
 from app.db.session import get_engine
 from app.middleware.request_id import RequestIDMiddleware
+from app.middleware.security import RateLimitMiddleware, SecurityHeadersMiddleware
+from app.observability.logging import setup_logging
+from app.observability.middleware import ObservabilityMiddleware
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     """Application lifespan — startup / shutdown hooks."""
+    # startup: configure structured logging
+    setup_logging(settings.LOG_LEVEL)
     # startup: verify DB connectivity
     engine = get_engine()
     try:
@@ -46,7 +52,7 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(
     title="OpenS2P API",
     description="Enterprise Source-to-Contract & Source-to-Pay Platform",
-    version="0.1.0",
+    version="0.7.0",
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -67,6 +73,13 @@ app = FastAPI(
 # ── middleware ─────────────────────────────────────────────────────────────
 
 app.add_middleware(RequestIDMiddleware)
+app.add_middleware(ObservabilityMiddleware)
+app.add_middleware(
+    RateLimitMiddleware,
+    max_requests=settings.RATE_LIMIT_MAX,
+    window_seconds=settings.RATE_LIMIT_WINDOW,
+)
+app.add_middleware(SecurityHeadersMiddleware)
 
 # ── middleware ─────────────────────────────────────────────────────────────
 

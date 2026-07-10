@@ -74,6 +74,26 @@ class SourcingService:
         )
         return event
 
+    async def compare_bids(self, event_id: uuid.UUID) -> dict | None:
+        """Compare all bids for an event, sorted by amount."""
+        event = await self.uow.sourcing_events.get(event_id)
+        if event is None:
+            return None
+        bids = await self.uow.supplier_bids.list_by_event(event_id)
+        sorted_bids = sorted(bids, key=lambda b: b.bid_amount or 0)
+        lowest = sorted_bids[0] if sorted_bids else None
+        return {
+            "event_id": str(event_id),
+            "total_bids": len(sorted_bids),
+            "lowest_bid": float(lowest.bid_amount) if lowest and lowest.bid_amount else 0,
+            "highest_bid": float(sorted_bids[-1].bid_amount) if sorted_bids and sorted_bids[-1].bid_amount else 0,
+            "average_bid": round(sum(float(b.bid_amount or 0) for b in sorted_bids) / len(sorted_bids), 2) if sorted_bids else 0,
+            "bids": [
+                {"supplier_id": str(b.supplier_id), "amount": float(b.bid_amount or 0), "submitted_at": b.submitted_at.isoformat() if b.submitted_at else None}
+                for b in sorted_bids
+            ],
+        }
+
     async def get_lowest_bidder(
         self,
         event_id: uuid.UUID,

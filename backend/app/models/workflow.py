@@ -22,6 +22,9 @@ class WorkflowInstance(Base, AuditMixin):
         Enum(WorkflowStatus), nullable=False, server_default=WorkflowStatus.PENDING.value,
     )
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    workflow_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    current_step: Mapped[int | None] = mapped_column(nullable=True)
+    wf_metadata: Mapped[dict | None] = mapped_column(JSONB)
 
     # -- relationships -------------------------------------------------------
     tasks: Mapped[List["ApprovalTask"]] = relationship(
@@ -43,6 +46,9 @@ class ApprovalTask(Base, AuditMixin):
     status: Mapped[str | None] = mapped_column(String(50))
     payload: Mapped[dict | None] = mapped_column(JSONB)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    step_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    assigned_role: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    comments: Mapped[str | None] = mapped_column(nullable=True)
 
     # -- relationships -------------------------------------------------------
     workflow: Mapped["WorkflowInstance"] = relationship(

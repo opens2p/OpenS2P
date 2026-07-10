@@ -106,6 +106,28 @@ class SupplierService:
         # TODO: integrate with AI risk model
         return supplier.risk_score
 
+    async def delete_supplier(
+        self,
+        supplier_id: uuid.UUID,
+        *,
+        soft: bool = True,
+    ) -> bool:
+        """Soft-delete (or hard-delete) a supplier."""
+        supplier = await self.uow.suppliers.get(supplier_id)
+        if supplier is None:
+            return False
+        deleted = await self.uow.suppliers.delete(supplier_id, soft=soft)
+        if deleted:
+            await self.uow.audit.log(
+                tenant_id=self.uow.tenant_id,
+                entity_type="supplier",
+                entity_id=supplier_id,
+                event_type="SUPPLIER_DELETED",
+                old_values={"supplier_name": supplier.supplier_name, "status": supplier.status.value},
+                created_by=self.actor_id,
+            )
+        return deleted
+
     # ── queries ───────────────────────────────────────────────────────────
 
     async def get_supplier_with_details(

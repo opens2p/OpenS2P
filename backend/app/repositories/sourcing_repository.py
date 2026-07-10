@@ -56,7 +56,7 @@ class SupplierBidRepository(BaseRepository[SupplierBid]):
         super().__init__(session, SupplierBid, tenant_id=tenant_id)
 
     async def list_by_event(self, event_id: uuid.UUID) -> list[SupplierBid]:
-        stmt = self._stmt().where(SupplierBid.event_id == event_id)
+        stmt = self._stmt().where(SupplierBid.event_id == event_id).order_by(SupplierBid.bid_amount)
         result = await self.session.execute(stmt)
         return list(result.unique().scalars().all())
 

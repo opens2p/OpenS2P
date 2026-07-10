@@ -1,7 +1,6 @@
 """
-OpenS2P – Workflow Service
-===========================
-Orchestrates approval workflows for procurement objects (PR, PO, supplier, invoice).
+OpenS2P – Workflow Service (Engine-powered)
+=============================================
 """
 
 from __future__ import annotations
@@ -11,14 +10,17 @@ from typing import Any
 
 from app.models import ApprovalTask, WorkflowInstance
 from app.services.uow import UnitOfWork
+from app.schemas.serialization import safe_validate
+from app.workflow.engine import WorkflowEngine
 
 
 class WorkflowService:
-    """Workflow orchestration — start, decide, escalate."""
+    """Workflow orchestration powered by the WorkflowEngine."""
 
     def __init__(self, uow: UnitOfWork, actor_id: uuid.UUID | None = None) -> None:
         self.uow = uow
         self.actor_id = actor_id
+        self.engine = WorkflowEngine(uow, actor_id=actor_id)
 
     async def start_workflow(
         self,
@@ -26,68 +28,36 @@ class WorkflowService:
         object_id: uuid.UUID,
     ) -> WorkflowInstance:
         """Initiate a new workflow for a business object (PR, PO, etc.)."""
-        wf = await self.uow.workflows.start_workflow(object_type, object_id)
-        await self.uow.audit.log(
-            tenant_id=self.uow.tenant_id,
-            entity_type="workflow",
-            entity_id=wf.id,
-            event_type="WORKFLOW_STARTED",
-            new_values={"object_type": object_type, "object_id": str(object_id)},
-            created_by=self.actor_id,
-        )
-        return wf
+        return await self.engine.start(object_type, object_id)
 
-    async def process_decision(
+    async def approve_task(
         self,
         task_id: uuid.UUID,
-        decision: str,
         payload: dict[str, Any] | None = None,
     ) -> ApprovalTask | None:
-        """Approve or reject an approval task."""
-        task = await self.uow.approval_tasks.get(task_id)
-        if task is None:
-            return None
+        """Approve an approval task and advance the workflow."""
+        return await self.engine.approve(task_id, payload)
 
-        if decision == "approve":
-            result = await self.uow.approval_tasks.approve(task_id, payload)
-            event = "APPROVAL_TASK_APPROVED"
-        elif decision == "reject":
-            result = await self.uow.approval_tasks.reject(task_id, payload)
-            event = "APPROVAL_TASK_REJECTED"
-        else:
-            return None
-
-        await self.uow.audit.log(
-            tenant_id=self.uow.tenant_id,
-            entity_type="approval_task",
-            entity_id=task_id,
-            event_type=event,
-            new_values={"decision": decision, **({"payload": payload} if payload else {})},
-            created_by=self.actor_id,
-        )
-        return result
-
-    async def escalate(
+    async def reject_task(
         self,
         task_id: uuid.UUID,
-        new_approver_id: uuid.UUID,
         reason: str | None = None,
     ) -> ApprovalTask | None:
-        """Reassign an approval task to a different user (escalation)."""
-        result = await self.uow.approval_tasks.delegate(task_id, new_approver_id)
-        await self.uow.audit.log(
-            tenant_id=self.uow.tenant_id,
-            entity_type="approval_task",
-            entity_id=task_id,
-            event_type="APPROVAL_TASK_ESCALATED",
-            new_values={
-                "new_approver_id": str(new_approver_id),
-                "reason": reason,
-            },
-            created_by=self.actor_id,
-        )
-        return result
+        """Reject an approval task and cancel the workflow."""
+        return await self.engine.reject(task_id, reason)
 
     async def get_pending_tasks(self, user_id: uuid.UUID) -> list[ApprovalTask]:
         """Return all outstanding approval tasks for a user."""
         return await self.uow.approval_tasks.list_pending_for(user_id)
+
+    async def get_workflow_history(
+        self,
+        object_type: str,
+        object_id: uuid.UUID,
+    ) -> list[WorkflowInstance]:
+        """Return workflow history for a business object."""
+        return await self.uow.workflows.list_by_object(object_type, object_id)
+
+    async def get_task(self, task_id: uuid.UUID) -> ApprovalTask | None:
+        """Get a single approval task by ID."""
+        return await self.uow.approval_tasks.get(task_id)

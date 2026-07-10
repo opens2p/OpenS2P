@@ -41,11 +41,14 @@ class PRStatus(PyEnum):
 
 
 class POStatus(PyEnum):
-    """CHECK constraint: status IN ('CREATED','SENT','CONFIRMED','CLOSED','CANCELLED')"""
+    """Purchase order lifecycle statuses."""
 
     CREATED = "CREATED"
+    APPROVED = "APPROVED"
     SENT = "SENT"
-    CONFIRMED = "CONFIRMED"
+    ACKNOWLEDGED = "ACKNOWLEDGED"
+    PARTIALLY_RECEIVED = "PARTIALLY_RECEIVED"
+    RECEIVED = "RECEIVED"
     CLOSED = "CLOSED"
     CANCELLED = "CANCELLED"
 
@@ -106,7 +109,7 @@ class AuditMixin:
     """
 
     id: Mapped[uuid.UUID] = mapped_column(
-        PG_UUID(as_uuid=True), primary_key=True,
+        PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4,
     )
 
     tenant_id: Mapped[uuid.UUID] = mapped_column(

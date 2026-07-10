@@ -17,6 +17,12 @@ alembic>=1.13
 python-jose[cryptography]>=3.3
 bcrypt>=4.0
 
+# Form data / file uploads
+python-multipart>=0.0.18
+
+# Email validation (used by pydantic)
+email-validator>=2.0
+
 # CORS
 # (included with fastapi)
 

@@ -28,6 +28,9 @@ from .supplier import Supplier, SupplierContact, SupplierDocument
 # Sourcing
 from .sourcing import SourcingEvent, SupplierBid
 
+# Document management
+from .document import Document, DocumentVersion
+
 # Contract management
 from .contract import Contract
 
@@ -60,6 +63,25 @@ from .audit import AuditEvent
 
 # AI Governance
 from .ai_execution import AIExecution
+from .ai_governance import AIPrompt, AIRequest, AIFeedback
+
+# Integration
+from .integration import (
+    IntegrationConnection,
+    IntegrationRun,
+    IntegrationLog,
+    FieldMapping,
+    ExternalReference,
+)
+
+# Analytics
+from .analytics import (
+    KPIDefinition,
+    KPISnapshot,
+    DashboardConfig,
+    SavedReport,
+    ReportExecution,
+)
 
 __all__ = [
     # base / mixin
@@ -86,6 +108,9 @@ __all__ = [
     # sourcing
     "SourcingEvent",
     "SupplierBid",
+    # document management
+    "Document",
+    "DocumentVersion",
     # contract
     "Contract",
     # procurement
@@ -113,4 +138,19 @@ __all__ = [
     "AuditEvent",
     # ai governance
     "AIExecution",
+    "AIPrompt",
+    "AIRequest",
+    "AIFeedback",
+    # integration
+    "IntegrationConnection",
+    "IntegrationRun",
+    "IntegrationLog",
+    "FieldMapping",
+    "ExternalReference",
+    # analytics
+    "KPIDefinition",
+    "KPISnapshot",
+    "DashboardConfig",
+    "SavedReport",
+    "ReportExecution",
 ]

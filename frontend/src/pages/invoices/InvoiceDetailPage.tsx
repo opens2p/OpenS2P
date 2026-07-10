@@ -2,8 +2,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiPost } from '../../api/client';
 import type { Invoice } from '../../api/types';
-import { ArrowLeft, DollarSign, CheckCircle } from 'lucide-react';
+import { ArrowLeft, DollarSign, CheckCircle, Upload } from 'lucide-react';
 import { ActivityTimeline } from '../../components/audit/ActivityTimeline';
+import { useToast } from '../../components/Toast';
 
 const matchColors: Record<string, string> = {
   PENDING: 'bg-yellow-100 text-yellow-700',
@@ -15,6 +16,7 @@ export default function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: invoice, isLoading } = useQuery({
     queryKey: ['invoice', id],
@@ -72,7 +74,7 @@ export default function InvoiceDetailPage() {
           </div>
         </div>
 
-        <div className="flex gap-3 pt-4 border-t border-gray-100">
+        <div className="flex gap-3 pt-4 border-t border-gray-100 flex-wrap">
           {invoice.match_status === 'PENDING' && (
             <button onClick={() => matchMutation.mutate()}
               className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700">
@@ -85,6 +87,10 @@ export default function InvoiceDetailPage() {
               <CheckCircle className="h-4 w-4" /> Approve Payment
             </button>
           )}
+          <button onClick={() => toast('info', 'Upload invoice PDF — coming in v0.8')}
+            className="flex items-center gap-2 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 hover:bg-gray-50 transition">
+            <Upload className="h-4 w-4" /> Upload Invoice PDF
+          </button>
         </div>
       </div>
 

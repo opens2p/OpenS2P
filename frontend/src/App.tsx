@@ -16,6 +16,14 @@ import InvoiceListPage from './pages/invoices/InvoiceListPage';
 import WorkflowInboxPage from './pages/workflows/WorkflowInboxPage';
 import ReceivingPage from './pages/receiving/ReceivingPage';
 import AIPage from './pages/ai/AIPage';
+import AnalyticsDashboard from './pages/analytics/AnalyticsDashboard';
+import SpendAnalytics from './pages/analytics/SpendAnalytics';
+import SupplierAnalytics from './pages/analytics/SupplierAnalytics';
+import { IntegrationListPage } from './pages/integrations/IntegrationListPage';
+import { IntegrationDetailPage } from './pages/integrations/IntegrationDetailPage';
+import SettingsPage from './pages/SettingsPage';
+import ProfilePage from './pages/ProfilePage';
+import { ToastProvider } from './components/Toast';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,6 +55,20 @@ function AppRoutes() {
       <Route path="/invoices" element={<ProtectedRoute><InvoiceListPage /></ProtectedRoute>} />
       <Route path="/workflows" element={<ProtectedRoute><WorkflowInboxPage /></ProtectedRoute>} />
       <Route path="/ai" element={<ProtectedRoute><AIPage /></ProtectedRoute>} />
+
+      {/* Analytics routes */}
+      <Route path="/analytics" element={<ProtectedRoute><AnalyticsDashboard /></ProtectedRoute>} />
+      <Route path="/analytics/spend" element={<ProtectedRoute><SpendAnalytics /></ProtectedRoute>} />
+      <Route path="/analytics/suppliers" element={<ProtectedRoute><SupplierAnalytics /></ProtectedRoute>} />
+
+      {/* Integration routes */}
+      <Route path="/integrations" element={<ProtectedRoute><IntegrationListPage /></ProtectedRoute>} />
+      <Route path="/integrations/connections/:id" element={<ProtectedRoute><IntegrationDetailPage /></ProtectedRoute>} />
+
+      {/* User routes */}
+      <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
@@ -58,7 +80,9 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <ToastProvider>
+            <AppRoutes />
+          </ToastProvider>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

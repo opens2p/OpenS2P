@@ -49,9 +49,10 @@ class ContractRepository(BaseRepository[Contract]):
         within_days: int = 30,
     ) -> list[Contract]:
         """Contracts expiring within the given number of days."""
+        from datetime import timedelta
         today = date.today()
         stmt = self._stmt().where(
-            Contract.end_date.between(today, today.replace(day=today.day + within_days)),
+            Contract.end_date.between(today, today + timedelta(days=within_days)),
         )
         result = await self.session.execute(stmt)
         return list(result.unique().scalars().all())

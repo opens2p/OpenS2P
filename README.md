@@ -9,6 +9,7 @@
     <a href="#-deployment">Deployment</a>
   </p>
   <p>
+    <img src="https://img.shields.io/badge/version-0.7.0-blueviolet" alt="Version 0.7.0">
     <img src="https://img.shields.io/badge/python-3.12-blue" alt="Python 3.12">
     <img src="https://img.shields.io/badge/react-19-purple" alt="React 19">
     <img src="https://img.shields.io/badge/license-Apache%202.0-green" alt="License Apache 2.0">
@@ -17,7 +18,24 @@
 
 ---
 
-**OpenS2P** is a modern, open-source Source-to-Pay (S2P) platform built for the enterprise. It covers the complete procurement lifecycle — from supplier onboarding through invoice payment — with AI-powered intelligence embedded at every step.
+**OpenS2P v0.7 Enterprise MVP** is a modern, open-source Source-to-Pay (S2P) platform built for the enterprise. It covers the complete procurement lifecycle — from supplier onboarding through invoice payment — with AI-powered intelligence embedded at every step.
+
+## ✅ v0.7 Enterprise MVP — Feature Complete
+
+| Domain | Status |
+|---|---|
+| **Supplier Management** — Onboard, approve, block, risk-score | ✅ |
+| **Contract Management** — Lifecycle, renewals, compliance | ✅ |
+| **Procurement** — Purchase Requisitions → Approvals → Purchase Orders | ✅ |
+| **Invoice Matching** — 2-way/3-way matching with exception handling | ✅ |
+| **Receiving** — Goods receipt against POs with quantity validation | ✅ |
+| **Workflow Engine** — Configurable approval workflows | ✅ |
+| **Analytics** — Spend analysis, supplier scorecards, dashboards | ✅ |
+| **Integration Framework** — Pluggable connectors (REST, SFTP, etc.) | ✅ |
+| **AI Intelligence** — Risk scoring, contract review, anomaly detection | ✅ |
+| **Audit Trail** — Immutable change history with activity timeline | ✅ |
+| **RBAC** — Role-based access control (7 roles, 29 permissions) | ✅ |
+| **Multi-Tenant** — SaaS-ready tenant isolation | ✅ |
 
 ## Features
 
@@ -45,12 +63,27 @@
 docker compose up --build
 ```
 
+> **Note:** Database migrations run automatically on startup. Seed data is loaded separately — see below.
+
 | Service | URL |
 |---|---|
 | Frontend | http://localhost:80 |
 | Backend API | http://localhost:8000 |
 | API Docs | http://localhost:8000/docs |
 | PostgreSQL | localhost:5432 |
+
+### Seed demo data
+
+```bash
+docker compose exec backend python -m app.db.seed
+```
+
+Or locally:
+
+```bash
+cd backend
+python -m app.db.seed
+```
 
 ### Demo credentials
 
@@ -59,6 +92,8 @@ docker compose up --build
 | `admin` | `Admin@12345` | System Admin |
 | `buyer` | `Buyer@12345` | Buyer |
 | `approver` | `Approver@12345` | Approver |
+| `requester` | `Requester@12345` | Requester |
+| `finance` | `Finance@12345` | Finance |
 
 ## Architecture
 

@@ -24,12 +24,17 @@ class ContractService:
     async def create_contract(self, data: dict[str, Any]) -> Contract:
         """Create a new contract."""
         contract = await self.uow.contracts.create(data)
+        # Ensure all values are JSON-serializable for the audit log
+        audit_data = {
+            k: (str(v) if isinstance(v, (uuid.UUID, date, datetime, Decimal)) else v)
+            for k, v in data.items()
+        }
         await self.uow.audit.log(
             tenant_id=self.uow.tenant_id,
             entity_type="contract",
             entity_id=contract.id,
             event_type="CONTRACT_CREATED",
-            new_values=data,
+            new_values=audit_data,
             created_by=self.actor_id,
         )
         return contract
@@ -71,6 +76,28 @@ class ContractService:
             created_by=self.actor_id,
         )
         return result
+
+    async def delete_contract(
+        self,
+        contract_id: uuid.UUID,
+        *,
+        soft: bool = True,
+    ) -> bool:
+        """Soft-delete (or hard-delete) a contract."""
+        contract = await self.uow.contracts.get(contract_id)
+        if contract is None:
+            return False
+        deleted = await self.uow.contracts.delete(contract_id, soft=soft)
+        if deleted:
+            await self.uow.audit.log(
+                tenant_id=self.uow.tenant_id,
+                entity_type="contract",
+                entity_id=contract_id,
+                event_type="CONTRACT_DELETED",
+                old_values={"contract_number": contract.contract_number},
+                created_by=self.actor_id,
+            )
+        return deleted
 
     async def expire_contract(self, contract_id: uuid.UUID) -> Contract | None:
         """Set a contract's end date to yesterday (effectively expired)."""

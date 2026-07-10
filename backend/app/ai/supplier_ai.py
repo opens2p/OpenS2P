@@ -77,3 +77,23 @@ class SupplierAIService:
             {"category": "MRO Parts", "confidence": 0.72},
             {"category": "Safety Equipment", "confidence": 0.68},
         ]
+
+    async def risk_scoring(self, supplier_id: uuid.UUID) -> dict[str, Any]:
+        """AI-powered supplier risk scoring with explainable factors."""
+        from app.ai.core.provider import AIProvider
+        from app.ai.core.prompts import PROMPTS
+        supplier = await self.uow.suppliers.get(supplier_id)
+        if not supplier:
+            return {"error": "Supplier not found"}
+        invoices = await self.uow.invoices.list()
+        po_count = len([inv for inv in invoices if inv.po_id])
+        context = {
+            "supplier_name": supplier.supplier_name,
+            "status": supplier.status.value if hasattr(supplier.status, 'value') else str(supplier.status),
+            "risk_score": float(supplier.risk_score or 0),
+            "total_invoices": len(invoices),
+            "total_pos": po_count,
+        }
+        provider = AIProvider()
+        result = await provider.generate(PROMPTS["supplier_risk"], str(context))
+        return {**context, "ai_analysis": result.get("content", "{}")}

@@ -25,18 +25,26 @@ from app.repositories import (
     ApprovalTaskRepository,
     AuditRepository,
     ContractRepository,
+    DocumentRepository,
+    IntegrationConnectionRepository,
+    IntegrationLogRepository,
+    IntegrationRunRepository,
     InvoiceRepository,
+    KPIDefinitionRepository,
+    KPISnapshotRepository,
     PurchaseOrderRepository,
     PurchaseOrderItemRepository,
     PurchaseRequisitionItemRepository,
     PurchaseRequisitionRepository,
     ReceiptRepository,
+    SavedReportRepository,
     SourcingEventRepository,
     SupplierBidRepository,
     SupplierRepository,
     TenantRepository,
     UserRepository,
     WorkflowRepository,
+    WorkflowTemplateRepository,
 )
 
 
@@ -56,6 +64,7 @@ class UnitOfWork:
     users: UserRepository = field(init=False)
     suppliers: SupplierRepository = field(init=False)
     contracts: ContractRepository = field(init=False)
+    documents: DocumentRepository = field(init=False)
     sourcing_events: SourcingEventRepository = field(init=False)
     supplier_bids: SupplierBidRepository = field(init=False)
     purchase_requisitions: PurchaseRequisitionRepository = field(init=False)
@@ -65,8 +74,15 @@ class UnitOfWork:
     receipts: ReceiptRepository = field(init=False)
     invoices: InvoiceRepository = field(init=False)
     workflows: WorkflowRepository = field(init=False)
+    workflow_templates: WorkflowTemplateRepository = field(init=False)
     approval_tasks: ApprovalTaskRepository = field(init=False)
     audit: AuditRepository = field(init=False)
+    integration_connections: IntegrationConnectionRepository = field(init=False)
+    integration_runs: IntegrationRunRepository = field(init=False)
+    integration_logs: IntegrationLogRepository = field(init=False)
+    saved_reports: SavedReportRepository = field(init=False)
+    kpi_definitions: KPIDefinitionRepository = field(init=False)
+    kpi_snapshots: KPISnapshotRepository = field(init=False)
 
     def __post_init__(self) -> None:
         tid = self.tenant_id
@@ -74,6 +90,7 @@ class UnitOfWork:
         self.users = UserRepository(self.session, tid)
         self.suppliers = SupplierRepository(self.session, tid)
         self.contracts = ContractRepository(self.session, tid)
+        self.documents = DocumentRepository(self.session, tid)
         self.sourcing_events = SourcingEventRepository(self.session, tid)
         self.supplier_bids = SupplierBidRepository(self.session, tid)
         self.purchase_requisitions = PurchaseRequisitionRepository(self.session, tid)
@@ -83,8 +100,15 @@ class UnitOfWork:
         self.receipts = ReceiptRepository(self.session, tid)
         self.invoices = InvoiceRepository(self.session, tid)
         self.workflows = WorkflowRepository(self.session, tid)
+        self.workflow_templates = WorkflowTemplateRepository(self.session, tid)
         self.approval_tasks = ApprovalTaskRepository(self.session, tid)
         self.audit = AuditRepository(self.session, tid)
+        self.integration_connections = IntegrationConnectionRepository(self.session, tid)
+        self.integration_runs = IntegrationRunRepository(self.session, tid)
+        self.integration_logs = IntegrationLogRepository(self.session)
+        self.saved_reports = SavedReportRepository(self.session, tid)
+        self.kpi_definitions = KPIDefinitionRepository(self.session, tid)
+        self.kpi_snapshots = KPISnapshotRepository(self.session, tid)
 
     async def commit(self) -> None:
         """Commit all pending changes in the current transaction."""

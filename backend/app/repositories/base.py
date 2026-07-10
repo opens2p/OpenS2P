@@ -65,9 +65,11 @@ class BaseRepository(Generic[ModelT]):
 
     # ── CRUD ──────────────────────────────────────────────────────────────
 
-    async def get(self, id: uuid.UUID) -> ModelT | None:
-        """Fetch a single record by primary key (respects tenant scope)."""
+    async def get(self, id: uuid.UUID, *, include_inactive: bool = False) -> ModelT | None:
+        """Fetch a single record by primary key (respects tenant scope and active flag)."""
         stmt = self._stmt().where(self.model.id == id)  # type: ignore[attr-defined]
+        if not include_inactive and hasattr(self.model, "is_active"):
+            stmt = stmt.where(self.model.is_active.is_(True))  # type: ignore[attr-defined]
         result = await self.session.execute(stmt)
         return result.unique().scalar_one_or_none()
 

@@ -17,10 +17,19 @@ class TestAuth:
     """Authentication endpoint tests (no DB fixtures needed)."""
 
     async def test_health(self):
-        """Unauthenticated health check should return 200."""
+        """Admin health check with auth."""
+        from app.security.jwt import create_access_token
+        admin_token = create_access_token(
+            sub="00000000-0000-0000-0000-000000000000",
+            tenant_id="00000000-0000-0000-0000-000000000000",
+            roles=["SYSTEM_ADMIN"],
+        )
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
-            resp = await client.get("/api/v1/admin/health")
+            resp = await client.get(
+                "/api/v1/admin/health",
+                headers={"Authorization": f"Bearer {admin_token}"},
+            )
             assert resp.status_code == 200
             data = resp.json()
             assert data["status"] == "healthy"

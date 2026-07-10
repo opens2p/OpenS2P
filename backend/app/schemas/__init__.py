@@ -37,6 +37,7 @@ from .purchase_requisition import (
     PurchaseRequisitionItemCreate,
     PurchaseRequisitionResponse,
     PurchaseRequisitionItemResponse,
+    PurchaseRequisitionUpdate,
 )
 from .purchase_order import (
     PurchaseOrderCreate,
@@ -54,8 +55,11 @@ from .workflow import (
     WorkflowStartRequest,
     DecisionRequest,
     EscalationRequest,
+    ApproveRequest,
+    RejectRequest,
     ApprovalTaskResponse,
     WorkflowResponse,
+    WorkflowHistoryResponse,
 )
 from .user import (
     UserCreate,
@@ -63,6 +67,22 @@ from .user import (
     UserUpdate,
     RoleResponse,
     RoleAssignment,
+)
+from .integration import (
+    ConnectionCreate,
+    ConnectionUpdate,
+    ConnectionResponse,
+    SyncRequest,
+    SyncResponse,
+    RunResponse,
+    LogResponse,
+)
+from .analytics import (
+    KPIDefinitionResponse,
+    KPISnapshotResponse,
+    DashboardResponse,
+    SavedReportCreate,
+    SavedReportResponse,
 )
 
 __all__ = [
@@ -106,12 +126,29 @@ __all__ = [
     "WorkflowStartRequest",
     "DecisionRequest",
     "EscalationRequest",
+    "ApproveRequest",
+    "RejectRequest",
     "ApprovalTaskResponse",
     "WorkflowResponse",
+    "WorkflowHistoryResponse",
     # user
     "UserCreate",
     "UserResponse",
     "UserUpdate",
     "RoleResponse",
     "RoleAssignment",
+    # integration
+    "ConnectionCreate",
+    "ConnectionUpdate",
+    "ConnectionResponse",
+    "SyncRequest",
+    "SyncResponse",
+    "RunResponse",
+    "LogResponse",
+    # analytics
+    "KPIDefinitionResponse",
+    "KPISnapshotResponse",
+    "DashboardResponse",
+    "SavedReportCreate",
+    "SavedReportResponse",
 ]

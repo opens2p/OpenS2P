@@ -13,7 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from app.models import ApprovalTask, WorkflowInstance, WorkflowStatus
+from app.models import ApprovalTask, WorkflowInstance, WorkflowStatus, WorkflowTemplate
 from app.repositories.base import BaseRepository
 
 
@@ -142,3 +142,25 @@ class ApprovalTaskRepository(BaseRepository[ApprovalTask]):
         return await self.update(task_id, {
             "approver_id": new_approver_id,
         })
+
+
+class WorkflowTemplateRepository(BaseRepository[WorkflowTemplate]):
+    """Repository for workflow template operations."""
+
+    def __init__(self, session: AsyncSession, tenant_id: uuid.UUID) -> None:
+        super().__init__(session, WorkflowTemplate, tenant_id=tenant_id)
+
+    async def find_by_object_type(self, object_type: str) -> WorkflowTemplate | None:
+        """Find a template by object type name matching."""
+        stmt = self._stmt().where(
+            WorkflowTemplate.template_name == object_type,
+            WorkflowTemplate.is_active.is_(True),
+        )
+        result = await self.session.execute(stmt)
+        return result.unique().scalar_one_or_none()
+
+    async def list_active(self) -> list[WorkflowTemplate]:
+        """List all active workflow templates."""
+        stmt = self._stmt().where(WorkflowTemplate.is_active.is_(True))
+        result = await self.session.execute(stmt)
+        return list(result.unique().scalars().all())

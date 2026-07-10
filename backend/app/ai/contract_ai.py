@@ -91,3 +91,25 @@ class ContractAIService:
             "suggested_price_adjustment": 3.5,  # percent
             "reasoning": "Based on market rates and historical spend trends",
         }
+
+    async def analyze_risk(self, contract_id: uuid.UUID) -> dict[str, Any]:
+        from app.ai.core.provider import AIProvider
+        from app.ai.core.prompts import PROMPTS
+        contract = await self.uow.contracts.get(contract_id)
+        if not contract:
+            return {"error": "Contract not found"}
+        context = {"contract_number": contract.contract_number, "value": float(contract.contract_value or 0), "start": str(contract.start_date or ""), "end": str(contract.end_date or "")}
+        provider = AIProvider()
+        result = await provider.generate(PROMPTS["contract_risk"], str(context))
+        return {**context, "ai_analysis": result.get("content", "{}")}
+
+    async def summarize(self, contract_id: uuid.UUID) -> dict[str, Any]:
+        from app.ai.core.provider import AIProvider
+        from app.ai.core.prompts import PROMPTS
+        contract = await self.uow.contracts.get(contract_id)
+        if not contract:
+            return {"error": "Contract not found"}
+        context = {"contract_number": contract.contract_number, "value": float(contract.contract_value or 0), "supplier_id": str(contract.supplier_id)}
+        provider = AIProvider()
+        result = await provider.generate(PROMPTS["contract_summary"], str(context))
+        return {"summary": result.get("content", "{}")}

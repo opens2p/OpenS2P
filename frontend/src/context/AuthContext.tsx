@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { apiPost, apiGet, setToken, clearToken, getToken } from '../api/client';
+import { apiPost, apiGet, setToken, clearToken, getToken, isTokenExpired } from '../api/client';
 import type { User, LoginResponse, MeResponse } from '../api/types';
 
 interface AuthState {
@@ -23,7 +23,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // On mount, try to restore session from stored token
   useEffect(() => {
     const token = getToken();
-    if (!token) {
+    if (!token || isTokenExpired(token)) {
+      clearToken();
       setLoading(false);
       return;
     }

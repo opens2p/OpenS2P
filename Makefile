@@ -1,6 +1,6 @@
 .PHONY: install dev test lint docker-up docker-build reset-db seed help
 
-APP_VERSION := $(shell cat VERSION 2>/dev/null || echo "0.1.0")
+APP_VERSION := $(shell cat VERSION 2>/dev/null || echo "0.7.0")
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \

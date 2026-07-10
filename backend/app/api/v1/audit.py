@@ -15,6 +15,8 @@ from app.schemas.common import ApiResponse
 from app.services.audit_service import AuditService
 from app.services.uow import UnitOfWork
 from app.api.deps import get_unit_of_work
+from app.security import AuthContext, require_auth, require_permission
+from app.security import permissions as perm
 
 router = APIRouter(prefix="/audit", tags=["Audit"])
 
@@ -56,6 +58,7 @@ async def _enrich_events(events: list, uow: UnitOfWork) -> list[dict]:
 async def get_entity_audit(
     entity_type: str,
     entity_id: uuid.UUID,
+    _: AuthContext = Depends(require_permission(perm.ADMIN_STATS)),
     skip: int = 0,
     limit: int = 50,
     uow: UnitOfWork = Depends(get_unit_of_work),
@@ -69,6 +72,7 @@ async def get_entity_audit(
 
 @router.get("/recent")
 async def get_recent_audit(
+    _: AuthContext = Depends(require_permission(perm.ADMIN_STATS)),
     limit: int = 20,
     uow: UnitOfWork = Depends(get_unit_of_work),
 ):
@@ -82,6 +86,7 @@ async def get_recent_audit(
 @router.get("/user/{user_id}")
 async def get_user_audit(
     user_id: uuid.UUID,
+    _: AuthContext = Depends(require_permission(perm.ADMIN_STATS)),
     limit: int = 20,
     uow: UnitOfWork = Depends(get_unit_of_work),
 ):

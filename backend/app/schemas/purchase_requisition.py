@@ -32,8 +32,15 @@ class PurchaseRequisitionItemResponse(AuditFields):
 
 
 class PurchaseRequisitionCreate(BaseModel):
+    supplier_id: uuid.UUID | None = None
     description: str | None = None
     items: list[PurchaseRequisitionItemCreate] = []
+
+
+class PurchaseRequisitionUpdate(BaseModel):
+    supplier_id: uuid.UUID | None = None
+    description: str | None = None
+    items: list[PurchaseRequisitionItemCreate] | None = None
 
 
 class PurchaseRequisitionResponse(AuditFields):
@@ -43,6 +50,7 @@ class PurchaseRequisitionResponse(AuditFields):
     pr_number: str | None = None
     status: PRStatus
     requester_id: uuid.UUID | None = None
+    supplier_id: uuid.UUID | None = None
     description: str | None = None
     tenant_id: uuid.UUID
     items: list[PurchaseRequisitionItemResponse] | None = None

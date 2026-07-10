@@ -36,6 +36,12 @@ class PurchaseOrderCreate(BaseModel):
     items: list[PurchaseOrderItemCreate] = []
 
 
+class PurchaseOrderUpdate(BaseModel):
+    po_number: str | None = None
+    status: str | None = None
+    items: list[PurchaseOrderItemCreate] | None = None
+
+
 class PurchaseOrderResponse(AuditFields):
     model_config = ConfigDict(from_attributes=True)
 

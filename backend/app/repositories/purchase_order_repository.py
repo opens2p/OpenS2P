@@ -47,12 +47,14 @@ class PurchaseOrderRepository(BaseRepository[PurchaseOrder]):
         result = await self.session.execute(stmt)
         return list(result.unique().scalars().all())
 
-    async def get_with_items(self, po_id: uuid.UUID) -> PurchaseOrder | None:
+    async def get_with_items(self, po_id: uuid.UUID, *, include_inactive: bool = False) -> PurchaseOrder | None:
         stmt = (
             self._stmt()
             .where(PurchaseOrder.id == po_id)
             .options(joinedload(PurchaseOrder.items))
         )
+        if not include_inactive:
+            stmt = stmt.where(PurchaseOrder.is_active.is_(True))
         result = await self.session.execute(stmt)
         return result.unique().scalar_one_or_none()
 

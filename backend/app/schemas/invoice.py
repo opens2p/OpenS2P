@@ -39,6 +39,14 @@ class InvoiceResponse(AuditFields):
     tenant_id: uuid.UUID
 
 
+class InvoiceUpdate(BaseModel):
+    invoice_number: str | None = None
+    amount: Decimal | None = Field(None, ge=0)
+    invoice_date: date | None = None
+    due_date: date | None = None
+    extras: dict[str, Any] | None = None
+
+
 class MatchAction(BaseModel):
     """Trigger 2-way / 3-way matching."""
     action: str = "match"  # match | flag_exception

@@ -22,8 +22,19 @@ from .purchase_requisition_repository import (
 from .purchase_order_repository import PurchaseOrderRepository, PurchaseOrderItemRepository
 from .receiving_repository import ReceiptRepository
 from .invoice_repository import InvoiceRepository
-from .workflow_repository import WorkflowRepository, ApprovalTaskRepository
+from .workflow_repository import WorkflowRepository, ApprovalTaskRepository, WorkflowTemplateRepository
 from .audit_repository import AuditRepository
+from .integration_repository import (
+    IntegrationConnectionRepository,
+    IntegrationRunRepository,
+    IntegrationLogRepository,
+)
+from .analytics_repository import (
+    KPIDefinitionRepository,
+    KPISnapshotRepository,
+    SavedReportRepository,
+)
+from .document_repository import DocumentRepository
 
 __all__ = [
     "BaseRepository",
@@ -41,5 +52,13 @@ __all__ = [
     "InvoiceRepository",
     "WorkflowRepository",
     "ApprovalTaskRepository",
+    "WorkflowTemplateRepository",
     "AuditRepository",
+    "IntegrationConnectionRepository",
+    "IntegrationRunRepository",
+    "IntegrationLogRepository",
+    "KPIDefinitionRepository",
+    "KPISnapshotRepository",
+    "SavedReportRepository",
+    "DocumentRepository",
 ]

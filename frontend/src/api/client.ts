@@ -16,6 +16,38 @@ export function clearToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+// ── client-side JWT helpers ─────────────────────────────────────────────
+
+/**
+ * Lightweight JWT payload decoder (no signature verification).
+ * Useful for reading claims like `exp` and `sub` client-side.
+ */
+export function decodeTokenPayload(token: string): Record<string, unknown> | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = parts[1];
+    const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(decoded);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Check whether a stored token is expired by reading its `exp` claim.
+ * Returns `true` if the token is missing, malformed, or past its expiry.
+ */
+export function isTokenExpired(token: string | null): boolean {
+  if (!token) return true;
+  const payload = decodeTokenPayload(token);
+  if (!payload) return true;
+  const exp = payload.exp as number | undefined;
+  if (!exp) return false; // no exp claim — assume valid
+  // `exp` is seconds since epoch; compare with current time
+  return Date.now() >= exp * 1000;
+}
+
 // ── base fetch ───────────────────────────────────────────────────────────
 
 export class ApiError extends Error {

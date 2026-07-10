@@ -13,7 +13,7 @@ from .base import Base
 class Currency(Base):
     __tablename__ = "currencies"
 
-    id: Mapped[uuid.UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     tenant_id: Mapped[uuid.UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=False, index=True)
     currency_code: Mapped[str] = mapped_column(String(3), nullable=False)
     currency_name: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -29,7 +29,7 @@ class Currency(Base):
 class Country(Base):
     __tablename__ = "countries"
 
-    id: Mapped[uuid.UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     tenant_id: Mapped[uuid.UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=False, index=True)
     country_code: Mapped[str] = mapped_column(String(3), nullable=False)
     country_name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -45,7 +45,7 @@ class Country(Base):
 class Category(Base):
     __tablename__ = "categories"
 
-    id: Mapped[uuid.UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     tenant_id: Mapped[uuid.UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=False, index=True)
     category_code: Mapped[str] = mapped_column(String(50), nullable=False)
     category_name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -61,7 +61,7 @@ class Category(Base):
 class UnitOfMeasure(Base):
     __tablename__ = "units_of_measure"
 
-    id: Mapped[uuid.UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     tenant_id: Mapped[uuid.UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=False, index=True)
     uom_code: Mapped[str] = mapped_column(String(10), nullable=False)
     uom_name: Mapped[str] = mapped_column(String(100), nullable=False)
