@@ -22,9 +22,11 @@
 
 ## OpenAI Build Week
 
-OpenS2P was built with OpenAI GPT-5 and Codex.
+OpenS2P was built with OpenAI GPT-5.6 and Codex.
 
-GPT-5 was used to design and implement AI-assisted procurement features, while Codex accelerated development by assisting with architecture, FastAPI endpoints, SQLAlchemy models, database migrations, debugging, documentation, and testing.
+GPT-5.6 was used to design and implement AI-assisted procurement features, while Codex accelerated development by assisting with architecture, FastAPI endpoints, SQLAlchemy models, database migrations, debugging, documentation, and testing.
+
+Setup and testing instructions are included in the Quick Start section below, including Docker startup, database seeding, local service URLs, and demo credentials.
 
 ## ✅ v0.7 Enterprise MVP — Feature Complete
 
