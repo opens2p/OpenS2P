@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   Bot,
   CheckCircle2,
+  ClipboardCheck,
   FileWarning,
   GitCompareArrows,
   Loader2,
@@ -130,6 +131,15 @@ export default function MatchingPage() {
     context?.stored_match_result || context?.match;
   const invoice = context?.invoice;
   const status = invoice?.match_status ?? 'PENDING';
+  const briefItems = suggestion?.resolution_brief
+    ? [
+        { label: 'What happened', value: suggestion.resolution_brief.what_happened },
+        { label: 'Why it matters', value: suggestion.resolution_brief.why_it_matters },
+        { label: 'Recommended action', value: suggestion.resolution_brief.recommended_action },
+        { label: 'Policy boundary', value: suggestion.resolution_brief.policy_boundary },
+        { label: 'Audit note', value: suggestion.resolution_brief.audit_note },
+      ]
+    : [];
 
   return (
     <div className="space-y-6">
@@ -320,6 +330,25 @@ export default function MatchingPage() {
                   {suggestion.action.replace(/_/g, ' ')}
                 </p>
               </div>
+              {briefItems.length > 0 && (
+                <div className="rounded-lg bg-cyan-400/10 border border-cyan-300/20 p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-cyan-200 mb-3 flex items-center gap-1.5">
+                    <ClipboardCheck className="h-3.5 w-3.5" /> AI Resolution Brief
+                  </p>
+                  <dl className="space-y-3">
+                    {briefItems.map((item) => (
+                      <div key={item.label}>
+                        <dt className="text-[10px] uppercase tracking-wider text-slate-400">
+                          {item.label}
+                        </dt>
+                        <dd className="text-sm text-slate-50 leading-snug mt-0.5">
+                          {item.value}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              )}
               <div className="rounded-lg bg-white/5 border border-white/10 p-3">
                 <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
                   <Sparkles className="h-3 w-3" /> Explanation

@@ -189,6 +189,13 @@ export interface ResolutionSuggestion {
   action: 'auto_match_tolerance' | 'await_grn' | 're_match' | 'escalate' | string;
   can_auto_resolve: boolean;
   explanation: string;
+  resolution_brief?: {
+    what_happened: string;
+    why_it_matters: string;
+    recommended_action: string;
+    policy_boundary: string;
+    audit_note: string;
+  };
   match?: MatchResult;
 }
 
@@ -205,7 +212,7 @@ export interface Receipt {
   id: string;
   receipt_number?: string | null;
   po_id: string;
-  status?: string | null;
+  status: string;
   received_date?: string | null;
   quantity_received?: number | null;
   amount_received?: number | null;
@@ -261,6 +268,38 @@ export interface SpendCategory {
 export interface SpendTrend {
   month: string;
   total: number;
+}
+
+export interface SpendDashboard {
+  total_spend: number;
+  by_supplier: Array<{ supplier_id: string; total: number }>;
+  by_category: SpendCategory[];
+  trend: SpendTrend[];
+  maverick?: Record<string, unknown>;
+}
+
+export interface SpendLeakageOpportunity {
+  id: string;
+  title: string;
+  severity: 'HIGH' | 'MEDIUM' | 'LOW' | string;
+  leakage_type: string;
+  estimated_savings: number;
+  evidence: string[];
+  recommended_action: string;
+  ai_brief: string;
+}
+
+export interface SpendLeakageResponse {
+  summary: {
+    opportunity_count: number;
+    total_detected_savings: number;
+    scan_scope: {
+      suppliers: number;
+      contracts: number;
+      invoices: number;
+    };
+  };
+  opportunities: SpendLeakageOpportunity[];
 }
 
 export interface SupplierScorecard {

@@ -20,6 +20,12 @@
 
 **OpenS2P v0.7 Enterprise MVP** is a modern, open-source Source-to-Pay (S2P) platform built for the enterprise. It covers the complete procurement lifecycle — from supplier onboarding through invoice payment — with AI-powered intelligence embedded at every step.
 
+## OpenAI Build Week
+
+OpenS2P was built with OpenAI GPT-5 and Codex.
+
+GPT-5 was used to design and implement AI-assisted procurement features, while Codex accelerated development by assisting with architecture, FastAPI endpoints, SQLAlchemy models, database migrations, debugging, documentation, and testing.
+
 ## ✅ v0.7 Enterprise MVP — Feature Complete
 
 | Domain | Status |

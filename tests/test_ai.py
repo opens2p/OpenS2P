@@ -70,6 +70,33 @@ class TestAIProvider:
         assert result["model"] == "heuristic"
 
 
+class TestInvoiceResolutionBrief:
+    def test_auto_variance_brief_uses_match_evidence(self):
+        """Resolution brief explains the demo auto-resolve scenario."""
+        from app.ai.invoice_ai import InvoiceAIService
+
+        svc = InvoiceAIService(uow=None)  # type: ignore[arg-type]
+        brief = svc._build_resolution_brief(
+            action="auto_match_tolerance",
+            can_auto_resolve=True,
+            match={
+                "po_total": 1000,
+                "invoice_amount": 1060,
+                "auto_resolve_tolerance": 100,
+                "has_po": True,
+                "has_receipt": True,
+                "primary_issue": "PRICE_VARIANCE",
+            },
+            issues=[{"code": "PRICE_VARIANCE"}],
+        )
+
+        assert brief["what_happened"] == "Invoice exceeds PO by $60.00."
+        assert brief["why_it_matters"] == "Variance is within autonomous tolerance ($100.00)."
+        assert brief["recommended_action"] == "Auto-resolve and mark ready for payment."
+        assert "GRN is missing" in brief["policy_boundary"]
+        assert brief["audit_note"] == "AI action recorded with reason and match evidence."
+
+
 # ──────────────────────────────────────────────────────────────────────
 # Guardrails – input validation & output sanitisation
 # ──────────────────────────────────────────────────────────────────────

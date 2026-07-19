@@ -173,7 +173,76 @@ class InvoiceAIService:
             "action": action,
             "can_auto_resolve": action in {"auto_match_tolerance", "re_match"},
             "explanation": llm_note or explanation,
+            "resolution_brief": self._build_resolution_brief(
+                action=action,
+                can_auto_resolve=action in {"auto_match_tolerance", "re_match"},
+                match=match,
+                issues=issues,
+            ),
             "match": match,
+        }
+
+    def _build_resolution_brief(
+        self,
+        *,
+        action: str,
+        can_auto_resolve: bool,
+        match: dict[str, Any],
+        issues: list[dict[str, Any]],
+    ) -> dict[str, str]:
+        """Create a demo-friendly AP resolution brief from match evidence."""
+        po_total = float(match.get("po_total") or 0)
+        invoice_amount = float(match.get("invoice_amount") or 0)
+        variance = invoice_amount - po_total
+        abs_variance = abs(variance)
+        auto_tolerance = float(match.get("auto_resolve_tolerance") or 0)
+        primary_issue = match.get("primary_issue")
+
+        if not match.get("has_po"):
+            what_happened = "Invoice is not linked to a purchase order."
+        elif primary_issue == "MISSING_GRN" or any(i.get("code") == "MISSING_GRN" for i in issues):
+            what_happened = "Invoice has no matching goods receipt."
+        elif abs_variance > 0:
+            direction = "exceeds" if variance > 0 else "is below"
+            what_happened = f"Invoice {direction} PO by ${abs_variance:,.2f}."
+        else:
+            what_happened = "PO, invoice, and goods receipt reconcile."
+
+        if action == "auto_match_tolerance":
+            why_it_matters = (
+                f"Variance is within autonomous tolerance (${auto_tolerance:,.2f})."
+            )
+            recommended_action = "Auto-resolve and mark ready for payment."
+        elif action == "re_match":
+            why_it_matters = "Documents now reconcile after updated match evidence."
+            recommended_action = "Re-run match and mark ready for payment."
+        elif action == "await_grn":
+            why_it_matters = "A 3-way match cannot complete until receipt evidence exists."
+            recommended_action = "Record goods receipt, then retry auto-resolution."
+        elif action == "escalate":
+            why_it_matters = (
+                f"Variance exceeds autonomous tolerance (${auto_tolerance:,.2f})."
+                if primary_issue == "PRICE_VARIANCE"
+                else "The exception falls outside autonomous resolution policy."
+            )
+            recommended_action = "Escalate to AP for human review."
+        else:
+            why_it_matters = "The agent needs policy evidence before taking action."
+            recommended_action = "Review exception details."
+
+        return {
+            "what_happened": what_happened,
+            "why_it_matters": why_it_matters,
+            "recommended_action": recommended_action,
+            "policy_boundary": (
+                "Auto-resolve only within tolerance; escalate if variance exceeds "
+                "tolerance or GRN is missing."
+            ),
+            "audit_note": (
+                "AI action recorded with reason and match evidence."
+                if can_auto_resolve
+                else "AI recommendation recorded with reason and match evidence."
+            ),
         }
 
     async def auto_resolve(self, invoice_id: uuid.UUID) -> dict[str, Any]:

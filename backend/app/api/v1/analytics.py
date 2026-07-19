@@ -52,6 +52,17 @@ async def spend_by_category(
         return ApiResponse(data=data)
 
 
+@router.get("/spend/leakage", response_model=ApiResponse[dict])
+async def spend_leakage(
+    _: AuthContext = Depends(require_permission(perm.ADMIN_STATS)),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+):
+    async with uow:
+        spend = SpendAnalytics(uow)
+        data = await spend.leakage_opportunities()
+        return ApiResponse(data=data)
+
+
 @router.get("/suppliers/scorecard", response_model=ApiResponse[dict])
 async def supplier_scorecard(
     _: AuthContext = Depends(require_permission(perm.ADMIN_STATS)),
