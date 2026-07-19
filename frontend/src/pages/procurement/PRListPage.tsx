@@ -71,12 +71,14 @@ export default function PRListPage() {
            (pr.description ?? '').toLowerCase().includes(q);
   });
 
-  const { data: suppliers } = useQuery({
-    queryKey: ['suppliers'],
-    queryFn: () => apiGet<Supplier[]>('/api/v1/suppliers'),
+  const { data: suppliers, isLoading: suppliersLoading } = useQuery({
+    queryKey: ['suppliers', 'APPROVED'],
+    queryFn: () => apiGet<Supplier[]>('/api/v1/suppliers?status=APPROVED&limit=200'),
+    staleTime: 5 * 60 * 1000,
+    retry: true,
   });
 
-  const approvedSuppliers = suppliers?.filter((s) => s.status === 'APPROVED') ?? [];
+  const approvedSuppliers = suppliers ?? [];
 
   const counts = {
     total: prs?.length ?? 0,
@@ -138,6 +140,7 @@ export default function PRListPage() {
           onSubmit={(data) => createMutation.mutate(data)}
           onCancel={() => setShowForm(false)}
           loading={createMutation.isPending}
+          suppliersLoading={suppliersLoading}
         />
       )}
 
@@ -259,11 +262,12 @@ export default function PRListPage() {
   );
 }
 
-function CreatePRForm({ suppliers, onSubmit, onCancel, loading }: {
+function CreatePRForm({ suppliers, onSubmit, onCancel, loading, suppliersLoading }: {
   suppliers: Supplier[];
   onSubmit: (data: PRCreatePayload) => void;
   onCancel: () => void;
   loading: boolean;
+  suppliersLoading?: boolean;
 }) {
   const [desc, setDesc] = useState('');
   const [supplierId, setSupplierId] = useState('');
@@ -298,6 +302,14 @@ function CreatePRForm({ suppliers, onSubmit, onCancel, loading }: {
     <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 space-y-5">
       <h2 className="text-lg font-semibold text-gray-900">New Requisition</h2>
 
+      {suppliersLoading ? (
+        <div className="text-center py-8">
+          <Loader2 className="h-6 w-6 text-indigo-500 animate-spin mx-auto mb-2" />
+          <p className="text-gray-500 text-sm">Loading suppliers...</p>
+        </div>
+      ) : (
+        <>
+
       {/* Supplier */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -306,14 +318,20 @@ function CreatePRForm({ suppliers, onSubmit, onCancel, loading }: {
         <select
           value={supplierId}
           onChange={(e) => { setSupplierId(e.target.value); setErrors(prev => ({ ...prev, supplier: '' })); }}
-          className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white ${errors.supplier ? 'border-red-300' : 'border-gray-300'}`}
+          disabled={suppliersLoading}
+          className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white ${errors.supplier ? 'border-red-300' : 'border-gray-300'} ${suppliersLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          <option value="">Select a supplier…</option>
+          <option value="">{suppliersLoading ? 'Loading suppliers...' : suppliers.length === 0 ? 'No approved suppliers — approve one first' : 'Select a supplier…'}</option>
           {suppliers.map((s) => (
             <option key={s.id} value={s.id}>{s.supplier_name}</option>
           ))}
         </select>
         {errors.supplier && <p className="text-xs text-red-500 mt-1">{errors.supplier}</p>}
+        {!suppliersLoading && suppliers.length === 0 && (
+          <p className="text-xs text-amber-600 mt-1">
+            Go to Suppliers, approve a supplier, then return here to create a requisition.
+          </p>
+        )}
       </div>
 
       {/* Description */}
@@ -440,6 +458,8 @@ function CreatePRForm({ suppliers, onSubmit, onCancel, loading }: {
           {loading ? 'Creating…' : 'Submit Requisition'}
         </button>
       </div>
+      </>
+      )}
     </div>
   );
 }

@@ -33,7 +33,9 @@ async def list_pos(
     uow: UnitOfWork = Depends(get_unit_of_work),
 ):
     async with uow:
-        pos = await uow.purchase_orders.list(skip=skip, limit=limit)
+        pos = await uow.purchase_orders.list(
+            skip=skip, limit=limit, with_items=True,
+        )
         validated = [await safe_validate(PurchaseOrderResponse, po) for po in pos]
         return ApiResponse(data=validated)
 

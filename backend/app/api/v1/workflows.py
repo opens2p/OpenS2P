@@ -13,6 +13,7 @@ from app.schemas.common import ApiResponse
 from app.schemas.serialization import safe_validate
 from app.schemas.workflow import (
     ApproveRequest,
+    DecisionRequest,
     EscalationRequest,
     RejectRequest,
     WorkflowStartRequest,
@@ -46,19 +47,6 @@ async def start_workflow(
             data=await safe_validate(WorkflowResponse, wf),
             message="Workflow started",
         )
-
-
-@router.get("/{workflow_id}", response_model=ApiResponse[WorkflowResponse])
-async def get_workflow(
-    workflow_id: uuid.UUID,
-    _: AuthContext = Depends(require_permission(perm.WORKFLOW_START)),
-    uow: UnitOfWork = Depends(get_unit_of_work),
-):
-    async with uow:
-        wf = await uow.workflows.get_with_tasks(workflow_id)
-        if wf is None:
-            raise HTTPException(status_code=404, detail="Workflow not found")
-        return ApiResponse(data=await safe_validate(WorkflowResponse, wf))
 
 
 @router.get("/tasks/pending", response_model=ApiResponse[list[ApprovalTaskResponse]])
@@ -113,6 +101,54 @@ async def reject_task(
             data=await safe_validate(ApprovalTaskResponse, result),
             message="Task rejected",
         )
+
+
+@router.post("/tasks/{task_id}/decide", response_model=ApiResponse[ApprovalTaskResponse])
+async def decide_task(
+    task_id: uuid.UUID,
+    body: DecisionRequest,
+    _: None = Depends(require_permission(perm.WORKFLOW_DECIDE)),
+    auth: AuthContext = Depends(require_auth),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+):
+    """Unified approve/reject decision for inbox UI."""
+    decision = (body.decision or "").strip().lower()
+    if decision not in {"approve", "reject"}:
+        raise HTTPException(
+            status_code=400,
+            detail="decision must be 'approve' or 'reject'",
+        )
+    async with uow:
+        svc = WorkflowService(uow, actor_id=auth.user_id)
+        if decision == "approve":
+            result = await svc.approve_task(task_id, body.payload)
+            message = "Task approved"
+        else:
+            reason = None
+            if body.payload and isinstance(body.payload.get("reason"), str):
+                reason = body.payload["reason"]
+            result = await svc.reject_task(task_id, reason)
+            message = "Task rejected"
+        if result is None:
+            raise HTTPException(status_code=404, detail="Task not found")
+        await uow.commit()
+        return ApiResponse(
+            data=await safe_validate(ApprovalTaskResponse, result),
+            message=message,
+        )
+
+
+@router.get("/{workflow_id}", response_model=ApiResponse[WorkflowResponse])
+async def get_workflow(
+    workflow_id: uuid.UUID,
+    _: AuthContext = Depends(require_permission(perm.WORKFLOW_START)),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+):
+    async with uow:
+        wf = await uow.workflows.get_with_tasks(workflow_id)
+        if wf is None:
+            raise HTTPException(status_code=404, detail="Workflow not found")
+        return ApiResponse(data=await safe_validate(WorkflowResponse, wf))
 
 
 @router.get("/history/{object_type}/{object_id}", response_model=ApiResponse[list[WorkflowResponse]])

@@ -14,11 +14,11 @@ from app.schemas.invoice import (
     InvoiceCreate,
     InvoiceResponse,
     InvoiceUpdate,
-    MatchAction,
     PaymentApproval,
+    ResolveExceptionRequest,
 )
 from app.schemas.serialization import safe_validate
-from app.services.invoice_service import InvoiceService
+from app.services.invoice_service import InvoiceMatchError, InvoiceService
 from app.services.uow import UnitOfWork
 from app.api.deps import get_unit_of_work
 from app.security import AuthContext, require_auth, require_permission
@@ -106,8 +106,33 @@ async def match_invoice(
         result = await svc.perform_matching(invoice_id)
         if result is None:
             raise HTTPException(status_code=404, detail="Invoice not found")
+        status = result.match_status.value if hasattr(result.match_status, "value") else str(result.match_status)
+        message = "Invoice matched" if status == "MATCHED" else "Invoice flagged with matching exception"
         data = await safe_validate(InvoiceResponse, result)
-        resp = ApiResponse(data=data, message="Invoice matched")
+        resp = ApiResponse(data=data, message=message)
+        await uow.commit()
+        return resp
+
+
+@router.post("/{invoice_id}/resolve-exception", response_model=ApiResponse[InvoiceResponse])
+async def resolve_invoice_exception(
+    invoice_id: uuid.UUID,
+    body: ResolveExceptionRequest,
+    _: None = Depends(require_permission(perm.INVOICE_MATCH)),
+    auth: AuthContext = Depends(require_auth),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+):
+    """Auto- or manually-resolve a matching exception."""
+    async with uow:
+        svc = InvoiceService(uow, actor_id=auth.user_id)
+        try:
+            result = await svc.resolve_exception(
+                invoice_id, mode=body.mode, note=body.note,
+            )
+        except InvoiceMatchError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        data = await safe_validate(InvoiceResponse, result)
+        resp = ApiResponse(data=data, message="Exception resolved")
         await uow.commit()
         return resp
 
@@ -122,11 +147,14 @@ async def approve_invoice(
 ):
     async with uow:
         svc = InvoiceService(uow, actor_id=auth.user_id)
-        result = await svc.approve_payment(invoice_id)
+        try:
+            result = await svc.send_to_payment(invoice_id)
+        except InvoiceMatchError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
         if result is None:
             raise HTTPException(status_code=404, detail="Invoice not found")
         data = await safe_validate(InvoiceResponse, result)
-        resp = ApiResponse(data=data, message="Payment approved")
+        resp = ApiResponse(data=data, message="Invoice sent to payment")
         await uow.commit()
         return resp
 
@@ -138,13 +166,17 @@ async def pay_invoice(
     auth: AuthContext = Depends(require_auth),
     uow: UnitOfWork = Depends(get_unit_of_work),
 ):
+    """Send a matched invoice to payment (same as approve payment)."""
     async with uow:
         svc = InvoiceService(uow, actor_id=auth.user_id)
-        result = await svc.approve_payment(invoice_id)
+        try:
+            result = await svc.send_to_payment(invoice_id)
+        except InvoiceMatchError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
         if result is None:
             raise HTTPException(status_code=404, detail="Invoice not found")
         data = await safe_validate(InvoiceResponse, result)
-        resp = ApiResponse(data=data, message="Payment approved")
+        resp = ApiResponse(data=data, message="Invoice sent to payment")
         await uow.commit()
         return resp
 

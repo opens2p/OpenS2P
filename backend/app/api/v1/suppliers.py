@@ -31,11 +31,25 @@ async def list_suppliers(
     _: AuthContext = Depends(require_permission(perm.SUPPLIER_VIEW)),
     skip: int = 0,
     limit: int = 50,
+    status: str | None = None,
     uow: UnitOfWork = Depends(get_unit_of_work),
 ):
     async with uow:
-        svc = SupplierService(uow)
-        suppliers = await svc.uow.suppliers.list(skip=skip, limit=limit)
+        from app.models import SupplierStatus
+
+        if status:
+            try:
+                status_enum = SupplierStatus(status.upper())
+            except ValueError as exc:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid supplier status: {status}",
+                ) from exc
+            suppliers = await uow.suppliers.list_by_status(
+                status_enum, skip=skip, limit=limit,
+            )
+        else:
+            suppliers = await uow.suppliers.list(skip=skip, limit=limit)
         return ApiResponse(data=[await safe_validate(SupplierSummary, s) for s in suppliers])
 
 

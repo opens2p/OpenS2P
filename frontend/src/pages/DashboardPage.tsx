@@ -77,9 +77,9 @@ export default function DashboardPage() {
 
   const stats = [
     { label: 'Total Spend', value: `$${Number(totalSpend).toLocaleString()}`, icon: DollarSign, color: 'bg-indigo-500', path: '/analytics/spend', subtitle: 'YTD' },
-    { label: 'Active Suppliers', value: activeSuppliers, icon: Building2, color: 'bg-blue-500', path: '/suppliers' },
-    { label: 'Active Contracts', value: activeContracts, icon: FileText, color: 'bg-violet-500', path: '/contracts' },
-    { label: 'Pending Approvals', value: pendingApprovals, icon: AlertTriangle, color: 'bg-amber-500', path: '/workflows' },
+    { label: 'Active Suppliers', value: String(activeSuppliers ?? 0), icon: Building2, color: 'bg-blue-500', path: '/suppliers' },
+    { label: 'Active Contracts', value: String(activeContracts ?? 0), icon: FileText, color: 'bg-violet-500', path: '/contracts' },
+    { label: 'Pending Approvals', value: String(pendingApprovals ?? 0), icon: AlertTriangle, color: 'bg-amber-500', path: '/workflows' },
     { label: 'Invoice Match Rate', value: `${invoiceMatchRate}%`, icon: TrendingUp, color: 'bg-emerald-500', path: '/invoices' },
   ];
 
@@ -248,7 +248,7 @@ export default function DashboardPage() {
             <div className="p-2 bg-blue-50 rounded-lg">
               <ShoppingCart className="h-5 w-5 text-blue-500" />
             </div>
-            <span className="text-lg font-bold text-gray-900">{pos?.filter(p => p.status === 'CONFIRMED').length ?? 0}</span>
+            <span className="text-lg font-bold text-gray-900">{pos?.filter(p => p.status === 'SENT').length ?? 0}</span>
           </div>
           <p className="text-sm text-gray-500">Confirmed POs ready for receiving</p>
         </div>

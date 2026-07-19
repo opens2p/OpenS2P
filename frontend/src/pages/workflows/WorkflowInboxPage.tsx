@@ -3,27 +3,32 @@ import { apiGet, apiPost } from '../../api/client';
 import type { ApprovalTask } from '../../api/types';
 import { CheckCircle, XCircle, UserPlus } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../components/Toast';
 
 export default function WorkflowInboxPage() {
   const queryClient = useQueryClient();
-
-  // For demo we use a fixed user ID — in production this comes from auth
-  const demoUserId = '8d7c5e05-e663-5035-b6ea-fabe12654ea8';
-
-  const { data: tasks } = useQuery({
-    queryKey: ['pending-tasks'],
-    queryFn: () => apiGet<ApprovalTask[]>(`/api/v1/workflows/tasks/pending?user_id=${demoUserId}`),
-  });
-
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [action, setAction] = useState<{ taskId: string; decision: string } | null>(null);
 
+  const userId = user?.id;
+
+  const { data: tasks, isLoading } = useQuery({
+    queryKey: ['pending-tasks', userId],
+    queryFn: () => apiGet<ApprovalTask[]>(`/api/v1/workflows/tasks/pending?user_id=${userId}`),
+    enabled: !!userId,
+  });
+
   const decideMutation = useMutation({
-    mutationFn: ({ taskId, decision }: { taskId: string; decision: string }) =>
+    mutationFn: ({ taskId, decision }: { taskId: string; decision: 'approve' | 'reject' }) =>
       apiPost(`/api/v1/workflows/tasks/${taskId}/decide`, { decision }),
-    onSuccess: () => {
+    onSuccess: (_data, vars) => {
       queryClient.invalidateQueries({ queryKey: ['pending-tasks'] });
       setAction(null);
+      toast('success', vars.decision === 'approve' ? 'Task approved' : 'Task rejected');
     },
+    onError: (err: Error) => toast('error', err.message || 'Decision failed'),
   });
 
   return (
@@ -33,7 +38,13 @@ export default function WorkflowInboxPage() {
         <p className="text-gray-500 mt-1">{tasks?.length ?? 0} pending approvals</p>
       </div>
 
-      {tasks?.length === 0 && (
+      {isLoading && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center text-sm text-gray-500">
+          Loading tasks…
+        </div>
+      )}
+
+      {!isLoading && tasks?.length === 0 && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
           <CheckCircle className="h-12 w-12 text-green-400 mx-auto mb-3" />
           <h3 className="text-lg font-medium text-gray-900">All caught up!</h3>

@@ -35,10 +35,16 @@ You help users understand their procurement data, answer questions about supplie
 contracts, purchase orders, invoices, and analytics. You provide actionable insights.
 When you don't know something, say so. Base your answers on the data available."""
 
+EXCEPTION_RESOLVE = """You are an autonomous AP exception handler for OpenS2P.
+Given a 3-way match exception (PO vs Invoice vs Goods Receipt), explain in one clear
+sentence whether the agent should auto-resolve within tolerance, wait for a GRN,
+or escalate to a human. Be concise and operational."""
+
 PROMPTS = {
     "contract_summary": CONTRACT_SUMMARY,
     "contract_risk": CONTRACT_RISK,
     "supplier_risk": SUPPLIER_RISK,
     "spend_analysis": SPEND_ANALYSIS,
     "copilot": COPILOT_SYSTEM,
+    "exception_resolve": EXCEPTION_RESOLVE,
 }

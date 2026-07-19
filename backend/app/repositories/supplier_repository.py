@@ -53,8 +53,13 @@ class SupplierRepository(BaseRepository[Supplier]):
         skip: int = 0,
         limit: int = 50,
     ) -> list[Supplier]:
-        stmt = self._stmt().where(Supplier.status == status)
-        stmt = stmt.offset(skip).limit(limit)
+        stmt = (
+            self._stmt()
+            .where(Supplier.status == status)
+            .where(Supplier.is_active.is_(True))
+            .order_by(Supplier.supplier_name.asc())
+        )
+        stmt = stmt.offset(skip).limit(min(limit, 200))
         result = await self.session.execute(stmt)
         return list(result.unique().scalars().all())
 

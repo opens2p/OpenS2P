@@ -14,6 +14,7 @@ import POListPage from './pages/procurement/POListPage';
 import CreatePOPage from './pages/procurement/CreatePOPage';
 import InvoiceListPage from './pages/invoices/InvoiceListPage';
 import WorkflowInboxPage from './pages/workflows/WorkflowInboxPage';
+import MatchingPage from './pages/matching/MatchingPage';
 import ReceivingPage from './pages/receiving/ReceivingPage';
 import AIPage from './pages/ai/AIPage';
 import AnalyticsDashboard from './pages/analytics/AnalyticsDashboard';
@@ -52,6 +53,7 @@ function AppRoutes() {
       <Route path="/procurement/pos" element={<ProtectedRoute><POListPage /></ProtectedRoute>} />
       <Route path="/procurement/create-po" element={<ProtectedRoute><CreatePOPage /></ProtectedRoute>} />
       <Route path="/receiving" element={<ProtectedRoute><ReceivingPage /></ProtectedRoute>} />
+      <Route path="/matching" element={<ProtectedRoute><MatchingPage /></ProtectedRoute>} />
       <Route path="/invoices" element={<ProtectedRoute><InvoiceListPage /></ProtectedRoute>} />
       <Route path="/workflows" element={<ProtectedRoute><WorkflowInboxPage /></ProtectedRoute>} />
       <Route path="/ai" element={<ProtectedRoute><AIPage /></ProtectedRoute>} />

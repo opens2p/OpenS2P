@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import uuid
 from datetime import date
-from typing import Optional
+from decimal import Decimal
 
-from sqlalchemy import Date, String, ForeignKey
+from sqlalchemy import Date, Numeric, String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -22,6 +22,8 @@ class Receipt(Base, AuditMixin):
     )
     received_date: Mapped[date | None] = mapped_column(Date)
     status: Mapped[str | None] = mapped_column(String(50))
+    quantity_received: Mapped[Decimal | None] = mapped_column(Numeric(15, 2))
+    amount_received: Mapped[Decimal | None] = mapped_column(Numeric(15, 2))
 
     # -- relationships -------------------------------------------------------
     purchase_order: Mapped["PurchaseOrder"] = relationship(

@@ -1,8 +1,8 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiPost } from '../../api/client';
-import type { Invoice } from '../../api/types';
-import { ArrowLeft, DollarSign, CheckCircle, Upload } from 'lucide-react';
+import type { AutoResolveResponse, Invoice, MatchResult } from '../../api/types';
+import { ArrowLeft, DollarSign, CheckCircle, Upload, Bot, GitCompareArrows } from 'lucide-react';
 import { ActivityTimeline } from '../../components/audit/ActivityTimeline';
 import { useToast } from '../../components/Toast';
 
@@ -26,16 +26,49 @@ export default function InvoiceDetailPage() {
 
   const matchMutation = useMutation({
     mutationFn: () => apiPost(`/api/v1/invoices/${id}/match`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['invoice', id] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoice', id] });
+      toast('success', 'Match completed');
+    },
+    onError: (err: Error) => toast('error', err.message || 'Match failed'),
+  });
+
+  const resolveMutation = useMutation({
+    mutationFn: () =>
+      apiPost<AutoResolveResponse>(`/api/v1/ai/invoice/${id}/resolve-exception`),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['invoice', id] });
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      if (data.success) toast('success', data.explanation || 'Exception resolved');
+      else toast('error', data.error || 'Could not auto-resolve');
+    },
+    onError: (err: Error) => toast('error', err.message || 'Auto-resolve failed'),
+  });
+
+  const manualResolveMutation = useMutation({
+    mutationFn: (note: string) =>
+      apiPost(`/api/v1/invoices/${id}/resolve-exception`, { mode: 'manual', note }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoice', id] });
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      toast('success', 'Exception cleared manually');
+    },
+    onError: (err: Error) => toast('error', err.message || 'Manual resolve failed'),
   });
 
   const approveMutation = useMutation({
     mutationFn: () => apiPost(`/api/v1/invoices/${id}/approve`, { approved: true }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['invoice', id] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoice', id] });
+      toast('success', 'Payment approved');
+    },
+    onError: (err: Error) => toast('error', err.message || 'Approve failed'),
   });
 
   if (isLoading) return <div className="text-gray-500 p-8">Loading…</div>;
   if (!invoice) return <div className="text-red-500 p-8">Invoice not found</div>;
+
+  const matchResult = invoice.extras?.match_result as MatchResult | undefined;
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -74,11 +107,54 @@ export default function InvoiceDetailPage() {
           </div>
         </div>
 
+        {matchResult && (
+          <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-sm space-y-2">
+            <p className="font-medium text-gray-900">Last match result</p>
+            <p className="text-gray-600">
+              Type: {matchResult.match_type ?? '—'} · PO total ${Number(matchResult.po_total ?? 0).toFixed(2)} ·
+              Variance ${Number(matchResult.amount_variance ?? 0).toFixed(2)}
+            </p>
+            {matchResult.issues && matchResult.issues.length > 0 && (
+              <ul className="text-rose-700 space-y-1">
+                {matchResult.issues.map((i) => (
+                  <li key={i.code}>{i.code}: {i.message}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
         <div className="flex gap-3 pt-4 border-t border-gray-100 flex-wrap">
-          {invoice.match_status === 'PENDING' && (
+          {(invoice.match_status === 'PENDING' || invoice.match_status === 'EXCEPTION') && (
             <button onClick={() => matchMutation.mutate()}
               className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700">
               <CheckCircle className="h-4 w-4" /> Match Invoice
+            </button>
+          )}
+          {invoice.match_status === 'EXCEPTION' && (
+            <button
+              onClick={() => resolveMutation.mutate()}
+              disabled={resolveMutation.isPending}
+              className="flex items-center gap-2 bg-cyan-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-cyan-700 disabled:opacity-50"
+            >
+              <Bot className="h-4 w-4" /> Auto-Resolve
+            </button>
+          )}
+          {invoice.match_status === 'EXCEPTION' && (
+            <button
+              onClick={() => {
+                const note = window.prompt('Resolution note (required for manual clear):');
+                if (note === null) return;
+                if (!note.trim()) {
+                  toast('error', 'Enter a resolution note');
+                  return;
+                }
+                manualResolveMutation.mutate(note.trim());
+              }}
+              disabled={manualResolveMutation.isPending}
+              className="flex items-center gap-2 bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-700 disabled:opacity-50"
+            >
+              Manual Resolve
             </button>
           )}
           {invoice.match_status === 'MATCHED' && (
@@ -87,6 +163,13 @@ export default function InvoiceDetailPage() {
               <CheckCircle className="h-4 w-4" /> Approve Payment
             </button>
           )}
+          <Link
+            to={`/matching`}
+            state={{ invoiceId: id }}
+            className="flex items-center gap-2 text-indigo-700 px-4 py-2 rounded-lg text-sm font-medium border border-indigo-200 hover:bg-indigo-50"
+          >
+            <GitCompareArrows className="h-4 w-4" /> Open in Matching
+          </Link>
           <button onClick={() => toast('info', 'Upload invoice PDF — coming in v0.8')}
             className="flex items-center gap-2 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 hover:bg-gray-50 transition">
             <Upload className="h-4 w-4" /> Upload Invoice PDF

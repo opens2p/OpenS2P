@@ -6,7 +6,7 @@ import {
   BarChart3, Plug, Settings,
   FileEdit, Send, Truck, CreditCard, Bot,
   Shield, FileSearch, FileSpreadsheet, BookOpen, ClipboardList,
-  Users, Sliders, ShieldAlert, ChevronDown, User,
+  Users, Sliders, ShieldAlert, ChevronDown, User, GitCompareArrows,
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '../lib/utils';
@@ -40,6 +40,7 @@ const navGroups = [
     label: 'Pay',
     items: [
       { path: '/invoices', label: 'Invoices', icon: CreditCard },
+      { path: '/matching', label: '3-Way Match', icon: GitCompareArrows },
     ],
   },
   {

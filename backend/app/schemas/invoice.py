@@ -52,6 +52,12 @@ class MatchAction(BaseModel):
     action: str = "match"  # match | flag_exception
 
 
+class ResolveExceptionRequest(BaseModel):
+    """Clear an invoice matching exception."""
+    mode: str = Field("auto", pattern="^(auto|manual)$")
+    note: str | None = None
+
+
 class PaymentApproval(BaseModel):
     approved: bool = True
     notes: str | None = None

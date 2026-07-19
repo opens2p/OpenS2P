@@ -47,6 +47,37 @@ class PurchaseOrderRepository(BaseRepository[PurchaseOrder]):
         result = await self.session.execute(stmt)
         return list(result.unique().scalars().all())
 
+    async def list(
+        self,
+        *,
+        skip: int = 0,
+        limit: int = 50,
+        sort_by: str | None = None,
+        sort_desc: bool = False,
+        include_inactive: bool = False,
+        with_items: bool = False,
+    ) -> list[PurchaseOrder]:
+        """List POs; optionally eager-load line items for totals."""
+        if not with_items:
+            return await super().list(
+                skip=skip,
+                limit=limit,
+                sort_by=sort_by,
+                sort_desc=sort_desc,
+                include_inactive=include_inactive,
+            )
+        stmt = self._stmt()
+        if not include_inactive:
+            stmt = stmt.where(PurchaseOrder.is_active.is_(True))
+        stmt = (
+            stmt.options(joinedload(PurchaseOrder.items))
+            .order_by(PurchaseOrder.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+        )
+        result = await self.session.execute(stmt)
+        return list(result.unique().scalars().all())
+
     async def get_with_items(self, po_id: uuid.UUID, *, include_inactive: bool = False) -> PurchaseOrder | None:
         stmt = (
             self._stmt()

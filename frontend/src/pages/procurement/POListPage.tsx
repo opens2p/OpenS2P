@@ -22,13 +22,13 @@ export default function POListPage() {
   const [search, setSearch] = useState('');
 
   const { data: pos, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['pos'],
-    queryFn: () => apiGet<PurchaseOrder[]>('/api/v1/purchase-orders'),
+    queryKey: ['pos', { limit: 200 }],
+    queryFn: () => apiGet<PurchaseOrder[]>('/api/v1/purchase-orders?limit=200'),
   });
 
   const { data: suppliers } = useQuery({
-    queryKey: ['suppliers'],
-    queryFn: () => apiGet<Supplier[]>('/api/v1/suppliers'),
+    queryKey: ['suppliers', { limit: 200 }],
+    queryFn: () => apiGet<Supplier[]>('/api/v1/suppliers?limit=200'),
   });
 
   const supplierMap = useMemo(() => {
@@ -59,7 +59,10 @@ export default function POListPage() {
   }, [pos, search, supplierMap]);
 
   const totalValue = (po: PurchaseOrder) =>
-    (po.items ?? []).reduce((sum, item) => sum + (item.price ?? 0) * (item.quantity ?? 0), 0);
+    (po.items ?? []).reduce(
+      (sum, item) => sum + Number(item.price ?? 0) * Number(item.quantity ?? 0),
+      0,
+    );
 
   return (
     <div className="space-y-6">
@@ -139,7 +142,7 @@ export default function POListPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right text-gray-900 font-medium">
-                    ${totalValue(po).toLocaleString()}
+                    ${totalValue(po).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
                   <td className="px-6 py-4 text-right">
                     {po.status === 'CREATED' && (
@@ -150,7 +153,7 @@ export default function POListPage() {
                         <Send className="h-4 w-4" /> Send
                       </button>
                     )}
-                    {po.status === 'CONFIRMED' && (
+                    {po.status === 'SENT' && (
                       <button
                         onClick={() => closeMutation.mutate(po.id)}
                         className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-800 text-xs font-medium"

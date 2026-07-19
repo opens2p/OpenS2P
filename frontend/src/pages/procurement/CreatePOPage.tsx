@@ -12,8 +12,8 @@ export default function CreatePOPage() {
   const [items, setItems] = useState([{ description: '', quantity: 1, price: 0 }]);
 
   const { data: suppliers } = useQuery({
-    queryKey: ['suppliers'],
-    queryFn: () => apiGet<Supplier[]>('/api/v1/suppliers'),
+    queryKey: ['suppliers', 'APPROVED'],
+    queryFn: () => apiGet<Supplier[]>('/api/v1/suppliers?status=APPROVED&limit=200'),
   });
 
   const createMutation = useMutation({
@@ -41,8 +41,8 @@ export default function CreatePOPage() {
             onChange={(e) => setSelectedSupplier(e.target.value)}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
           >
-            <option value="">Select a supplier…</option>
-            {suppliers?.filter(s => s.status === 'APPROVED').map((s) => (
+            <option value="">{!suppliers || suppliers.length === 0 ? 'No approved suppliers available' : 'Select a supplier…'}</option>
+            {suppliers?.map((s) => (
               <option key={s.id} value={s.id}>{s.supplier_name}</option>
             ))}
           </select>

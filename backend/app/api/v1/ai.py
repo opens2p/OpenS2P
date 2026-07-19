@@ -97,6 +97,59 @@ async def detect_invoice_anomalies(
         return ApiResponse(data=result)
 
 
+@router.get("/invoice/{invoice_id}/match-context")
+async def invoice_match_context(
+    invoice_id: uuid.UUID,
+    _: AuthContext = Depends(require_permission(perm.INVOICE_VIEW)),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+):
+    """PO / Invoice / GRN context for the Matching workspace."""
+    async with uow:
+        svc = InvoiceAIService(uow)
+        result = await svc.build_match_context(invoice_id)
+        if result.get("error"):
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail=result["error"])
+        return ApiResponse(data=result)
+
+
+@router.get("/invoice/{invoice_id}/suggest-resolution")
+async def suggest_invoice_resolution(
+    invoice_id: uuid.UUID,
+    _: AuthContext = Depends(require_permission(perm.INVOICE_MATCH)),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+):
+    """AI/rule suggestion for resolving a matching exception."""
+    async with uow:
+        svc = InvoiceAIService(uow)
+        result = await svc.suggest_resolution(invoice_id)
+        if result.get("error"):
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail=result["error"])
+        return ApiResponse(data=result)
+
+
+@router.post("/invoice/{invoice_id}/resolve-exception")
+async def ai_resolve_invoice_exception(
+    invoice_id: uuid.UUID,
+    _: None = Depends(require_permission(perm.INVOICE_MATCH)),
+    auth: AuthContext = Depends(require_auth),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+):
+    """Autonomous exception handler — resolve when rules allow."""
+    async with uow:
+        svc = InvoiceAIService(uow, actor_id=auth.user_id)
+        result = await svc.auto_resolve(invoice_id)
+        if result.get("error") and not result.get("success"):
+            from fastapi import HTTPException
+            # Not found vs cannot resolve
+            if result.get("error") == "Invoice not found":
+                raise HTTPException(status_code=404, detail=result["error"])
+            raise HTTPException(status_code=400, detail=result["error"])
+        await uow.commit()
+        return ApiResponse(data=result, message="Exception auto-resolved" if result.get("success") else "Not resolved")
+
+
 @router.get("/contract/{contract_id}/summarize")
 async def summarize_contract(
     contract_id: uuid.UUID,

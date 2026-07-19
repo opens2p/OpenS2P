@@ -21,8 +21,8 @@ export function SupplierListPage() {
   const queryClient = useQueryClient();
 
   const { data: suppliers, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['suppliers'],
-    queryFn: () => apiGet<Supplier[]>('/api/v1/suppliers'),
+    queryKey: ['suppliers', { limit: 200 }],
+    queryFn: () => apiGet<Supplier[]>('/api/v1/suppliers?limit=200'),
   });
 
   const createMutation = useMutation({

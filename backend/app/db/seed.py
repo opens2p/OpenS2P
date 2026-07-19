@@ -499,6 +499,18 @@ _DEMO_INVOICE2_ID = _uuid("invoice:inv-2026-002")
 _DEMO_INVOICE3_ID = _uuid("invoice:inv-2026-003")
 _DEMO_INVOICE4_ID = _uuid("invoice:inv-2026-004")
 _DEMO_INVOICE5_ID = _uuid("invoice:inv-2026-005")
+# 3-way match demo scenarios
+_MATCH_PO_CLEAN = _uuid("po:match-clean")
+_MATCH_PO_AUTO = _uuid("po:match-auto")
+_MATCH_PO_NOGRN = _uuid("po:match-nogrn")
+_MATCH_PO_ESC = _uuid("po:match-esc")
+_MATCH_INV_CLEAN = _uuid("invoice:match-clean")
+_MATCH_INV_AUTO = _uuid("invoice:match-auto")
+_MATCH_INV_NOGRN = _uuid("invoice:match-nogrn")
+_MATCH_INV_ESC = _uuid("invoice:match-esc")
+_MATCH_GR_CLEAN = _uuid("receipt:match-clean")
+_MATCH_GR_AUTO = _uuid("receipt:match-auto")
+_MATCH_GR_ESC = _uuid("receipt:match-esc")
 
 
 def _seed_demo_data(session: Session) -> None:
@@ -853,6 +865,8 @@ def _seed_demo_data(session: Session) -> None:
             po_id=_DEMO_PO_ID,
             status="completed",
             received_date=date(2026, 3, 20),
+            quantity_received=150,
+            amount_received=3000.00,
             created_at=_now(),
             updated_at=_now(),
             created_by=buyer_id,
@@ -1043,7 +1057,179 @@ def _seed_demo_data(session: Session) -> None:
             conflict_col="invoice_number",
         )
 
-    print(f"  ✓ {len(suppliers_data)} suppliers, 1 contract, {len(pr_defs)} PRs, {len(po_defs) + 1} POs, 1 receipt, {len(invoice_defs)} invoices seeded")
+    # ── Intelligent 3-Way Match demo scenarios ───────────────────────────
+    # PO totals are always 10 × $100 = $1,000 for easy variance math.
+    match_scenarios = [
+        dict(
+            po_id=_MATCH_PO_CLEAN,
+            po_number="PO-MATCH-CLEAN",
+            inv_id=_MATCH_INV_CLEAN,
+            inv_number="INV-MATCH-CLEAN",
+            amount=1000.00,
+            match_status="PENDING",
+            gr_id=_MATCH_GR_CLEAN,
+            gr_number="GR-MATCH-CLEAN",
+            has_grn=True,
+            scenario="clean",
+        ),
+        dict(
+            po_id=_MATCH_PO_AUTO,
+            po_number="PO-MATCH-AUTO",
+            inv_id=_MATCH_INV_AUTO,
+            inv_number="INV-MATCH-AUTO",
+            amount=1060.00,  # +6% → EXCEPTION on match ($60 > $50), Auto-Resolve within $100
+            match_status="PENDING",
+            gr_id=_MATCH_GR_AUTO,
+            gr_number="GR-MATCH-AUTO",
+            has_grn=True,
+            scenario="auto_variance",
+        ),
+        dict(
+            po_id=_MATCH_PO_NOGRN,
+            po_number="PO-MATCH-NOGRN",
+            inv_id=_MATCH_INV_NOGRN,
+            inv_number="INV-MATCH-NOGRN",
+            amount=1000.00,
+            match_status="PENDING",
+            gr_id=None,
+            gr_number=None,
+            has_grn=False,
+            scenario="missing_grn",
+        ),
+        dict(
+            po_id=_MATCH_PO_ESC,
+            po_number="PO-MATCH-ESC",
+            inv_id=_MATCH_INV_ESC,
+            inv_number="INV-MATCH-ESC",
+            amount=1200.00,  # +20% → escalate
+            match_status="PENDING",
+            gr_id=_MATCH_GR_ESC,
+            gr_number="GR-MATCH-ESC",
+            has_grn=True,
+            scenario="escalate",
+        ),
+    ]
+
+    for sc in match_scenarios:
+        _upsert(
+            session,
+            "purchase_orders",
+            dict(
+                id=sc["po_id"],
+                tenant_id=SEED_TENANT_ID,
+                po_number=sc["po_number"],
+                supplier_id=_DEMO_SUPPLIER_ID,
+                status="SENT",
+                created_at=_now(),
+                updated_at=_now(),
+                created_by=buyer_id,
+                updated_by=buyer_id,
+                is_active=True,
+            ),
+            conflict_col="po_number",
+        )
+        _upsert(
+            session,
+            "purchase_order_items",
+            dict(
+                id=_uuid(f"po_item:{sc['scenario']}"),
+                tenant_id=SEED_TENANT_ID,
+                po_id=sc["po_id"],
+                description=f"3-way match demo item ({sc['scenario']})",
+                quantity=10,
+                price=100.00,
+                created_at=_now(),
+                updated_at=_now(),
+                created_by=buyer_id,
+                updated_by=buyer_id,
+                is_active=True,
+            ),
+            conflict_col="id",
+        )
+        if sc["has_grn"]:
+            _upsert(
+                session,
+                "receipts",
+                dict(
+                    id=sc["gr_id"],
+                    tenant_id=SEED_TENANT_ID,
+                    receipt_number=sc["gr_number"],
+                    po_id=sc["po_id"],
+                    status="completed",
+                    received_date=date(2026, 7, 1),
+                    quantity_received=10,
+                    amount_received=1000.00,
+                    created_at=_now(),
+                    updated_at=_now(),
+                    created_by=buyer_id,
+                    updated_by=buyer_id,
+                    is_active=True,
+                ),
+                conflict_col="receipt_number",
+            )
+        _upsert(
+            session,
+            "invoices",
+            dict(
+                id=sc["inv_id"],
+                tenant_id=SEED_TENANT_ID,
+                invoice_number=sc["inv_number"],
+                po_id=sc["po_id"],
+                amount=sc["amount"],
+                match_status=sc["match_status"],
+                invoice_date=date(2026, 7, 10),
+                due_date=date(2026, 8, 10),
+                extras=json.dumps({
+                    "demo_scenario": sc["scenario"],
+                    "supplier_reference": f"DEMO-{sc['scenario'].upper()}",
+                }),
+                created_at=_now(),
+                updated_at=_now(),
+                created_by=finance_id,
+                updated_by=finance_id,
+                is_active=True,
+            ),
+            conflict_col="invoice_number",
+        )
+
+    # Backfill qty on demo receipts that were seeded before the column existed
+    session.execute(
+        text(
+            """
+            UPDATE receipts
+            SET quantity_received = COALESCE(quantity_received, 150),
+                amount_received = COALESCE(amount_received, 3000)
+            WHERE receipt_number = 'GR-260710-00001'
+            """
+        ),
+    )
+    # Keep match demo invoices PENDING so the live walkthrough can run Match
+    session.execute(
+        text(
+            """
+            UPDATE invoices
+            SET match_status = 'PENDING',
+                amount = CASE invoice_number
+                    WHEN 'INV-MATCH-CLEAN' THEN 1000
+                    WHEN 'INV-MATCH-AUTO' THEN 1060
+                    WHEN 'INV-MATCH-NOGRN' THEN 1000
+                    WHEN 'INV-MATCH-ESC' THEN 1200
+                    ELSE amount
+                END,
+                extras = COALESCE(extras, '{}'::jsonb) - 'match_result'
+            WHERE invoice_number LIKE 'INV-MATCH-%'
+            """
+        ),
+    )
+    session.commit()
+
+    print(
+        f"  ✓ {len(suppliers_data)} suppliers, 1 contract, {len(pr_defs)} PRs, "
+        f"{len(po_defs) + 1 + len(match_scenarios)} POs, "
+        f"{1 + sum(1 for s in match_scenarios if s['has_grn'])} receipts, "
+        f"{len(invoice_defs) + len(match_scenarios)} invoices seeded "
+        f"(incl. {len(match_scenarios)} 3-way match demos)"
+    )
 
 
 # ═══════════════════════════════════════════════════════════════════════════
